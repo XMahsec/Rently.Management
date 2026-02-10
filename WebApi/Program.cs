@@ -138,6 +138,32 @@ using (var scope = app.Services.CreateScope())
 {
     var ctx = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+    // Ensure required columns exist in Users table to avoid runtime errors
+    try
+    {
+        var conn = ctx.Database.GetDbConnection();
+        conn.Open();
+        string[] cols = ["PasswordHash","PasswordSalt","PasswordResetToken","PasswordResetTokenExpires"];
+        foreach (var col in cols)
+        {
+            using var checkCmd = conn.CreateCommand();
+            checkCmd.CommandText = $"SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Users' AND COLUMN_NAME = @c";
+            var p = checkCmd.CreateParameter();
+            p.ParameterName = "@c";
+            p.Value = col;
+            checkCmd.Parameters.Add(p);
+            var existsCount = Convert.ToInt32(checkCmd.ExecuteScalar());
+            if (existsCount == 0)
+            {
+                using var alter = conn.CreateCommand();
+                var sqlType = col == "PasswordResetTokenExpires" ? "datetime2 NULL" : "nvarchar(500) NULL";
+                alter.CommandText = $"ALTER TABLE [Users] ADD [{col}] {sqlType}";
+                alter.ExecuteNonQuery();
+            }
+        }
+        conn.Close();
+    }
+    catch { }
     var adminEmail = config["Admin:Email"] ?? "";
     if (!string.IsNullOrWhiteSpace(adminEmail))
     {
