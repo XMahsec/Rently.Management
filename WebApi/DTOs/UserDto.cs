@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 namespace Rently.Management.WebApi.DTOs;
 
 public class UserDto
@@ -10,23 +11,38 @@ public class UserDto
 
 public class CreateUserDto
 {
+    [Required]
+    [StringLength(150)]
     public string? Name { get; set; }
+    [Required]
+    [EmailAddress]
+    [StringLength(255)]
     public string? Email { get; set; }
+    [Required]
+    [StringLength(30)]
     public string? Phone { get; set; }
+    [Required]
+    [StringLength(50)]
     public string? Role { get; set; }
     public string? ApprovalStatus { get; set; }
 }
 
 public class UpdateUserDto
 {
+    [StringLength(150)]
     public string? Name { get; set; }
+    [EmailAddress]
+    [StringLength(255)]
     public string? Email { get; set; }
+    [StringLength(30)]
     public string? Phone { get; set; }
     public string? ApprovalStatus { get; set; }
 }
 
 public class UpdateStatusDto
 {
+    [Required]
+    [RegularExpression("^(Active|Non-Active|Blocked)$")]
     public string Status { get; set; } = ""; // "Active", "Non-Active", "Blocked"
 }
 

@@ -19,6 +19,11 @@ public class User : AuditableEntity
     public string? BillingCountry { get; set; }
     public string? ZipCode { get; set; }
 
+    public string? PasswordHash { get; set; }
+    public string? PasswordSalt { get; set; }
+    public string? PasswordResetToken { get; set; }
+    public DateTime? PasswordResetTokenExpires { get; set; }
+
     // صور التحقق (غالباً مسارات أو URLs)
     public string? IdImage { get; set; }
     public string? LicenseImage { get; set; }

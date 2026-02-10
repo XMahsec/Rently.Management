@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Rently.Management.Domain.Repositories;
-using Rently.Management.Infrastructure.Data;
+using Rently.Management.WebApi;
 
 namespace Rently.Management.Infrastructure.Repositories;
 

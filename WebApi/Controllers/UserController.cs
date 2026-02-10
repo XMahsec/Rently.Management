@@ -2,11 +2,13 @@ using Microsoft.AspNetCore.Mvc;
 using Rently.Management.Domain.Entities;
 using Rently.Management.Domain.Repositories;
 using Rently.Management.WebApi.DTOs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Rently.Management.WebApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class UserController : ControllerBase
     {
         private readonly IUserRepository _userRepository;
@@ -97,8 +99,8 @@ namespace Rently.Management.WebApi.Controllers
 
             if (!string.IsNullOrEmpty(dto.Name))
                 user.Name = dto.Name;
-            if (!string.IsNullOrEmpty(dto.Email))
-                user.Email = dto.Email;
+            if (!string.IsNullOrEmpty(dto.Email) && dto.Email != user.Email)
+                return BadRequest();
             if (!string.IsNullOrEmpty(dto.Phone))
                 user.Phone = dto.Phone;
             if (!string.IsNullOrEmpty(dto.ApprovalStatus))

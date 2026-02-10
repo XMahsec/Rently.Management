@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 namespace Rently.Management.WebApi.DTOs;
 
 public class RequestDto
@@ -12,7 +13,11 @@ public class RequestDto
 
 public class UpdateRequestStatusDto
 {
+    [Required]
+    [RegularExpression("^(Owner verification|Car listing)$")]
     public string Type { get; set; } = "";          // which bucket (owner / car)
+    [Required]
+    [RegularExpression("^(Approved|Rejected|Pending)$")]
     public string Status { get; set; } = "";        // "Approved", "Rejected", "Pending"
 }
 

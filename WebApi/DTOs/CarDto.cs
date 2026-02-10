@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 namespace Rently.Management.WebApi.DTOs;
 
 public class CarDto
@@ -16,17 +17,27 @@ public class CarDto
 
 public class CreateCarDto
 {
+    [Required]
+    [Range(1, int.MaxValue)]
     public int OwnerId { get; set; }
+    [Required]
     public string? Brand { get; set; }
+    [Required]
     public string? Model { get; set; }
+    [Required]
+    [Range(1900, 2100)]
     public int Year { get; set; }
+    [Required]
+    [Range(typeof(decimal), "0.01", "79228162514264337593543950335")]
     public decimal PricePerDay { get; set; }
+    [Required]
     public string? Status { get; set; }
     public string? Transmission { get; set; }
     public string? Color { get; set; }
     public string? LocationCity { get; set; }
     public string? Features { get; set; }
     public string? Description { get; set; }
+    [Required]
     public string? LicensePlate { get; set; }
     public string? CarLicenseImage { get; set; }
 }

@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 namespace Rently.Management.WebApi.DTOs;
 
 public class BookingStatisticsDto
@@ -25,11 +26,15 @@ public class BookingDto
 
 public class UpdateBookingStatusDto
 {
+    [Required]
+    [RegularExpression("^(Active|Up coming|Completed|Canceled|Pending)$")]
     public string Status { get; set; } = ""; // UI status
 }
 
 public class RefundBookingsDto
 {
+    [Required]
+    [MinLength(1)]
     public List<int> BookingIds { get; set; } = new();
     public string? Reason { get; set; }
 }
