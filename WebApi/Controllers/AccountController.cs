@@ -1,0 +1,119 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Rently.Management.WebApi.DTOs;
+using Rently.Management.WebApi;
+using Rently.Management.WebApi.Services;
+
+namespace Rently.Management.WebApi.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class AccountController : ControllerBase
+    {
+        private readonly ApplicationDbContext _context;
+        private readonly PasswordService _passwordService;
+
+        public AccountController(ApplicationDbContext context, PasswordService passwordService)
+        {
+            _context = context;
+            _passwordService = passwordService;
+        }
+
+        [HttpPost("change-name")]
+        [Authorize]
+        public async Task<IActionResult> ChangeName([FromBody] ChangeNameDto dto)
+        {
+            var sub = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+            if (!int.TryParse(sub, out var userId)) return Unauthorized();
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return NotFound();
+            user.Name = dto.Name;
+            user.UpdatedAt = DateTime.UtcNow;
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [HttpPost("change-password")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+        {
+            var sub = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+            if (!int.TryParse(sub, out var userId)) return Unauthorized();
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return NotFound();
+            if (string.IsNullOrEmpty(user.PasswordHash) || string.IsNullOrEmpty(user.PasswordSalt)) return BadRequest();
+            var ok = _passwordService.Verify(dto.CurrentPassword, user.PasswordHash!, user.PasswordSalt!);
+            if (!ok) return Unauthorized();
+            var pair = _passwordService.HashPassword(dto.NewPassword);
+            user.PasswordHash = pair.hash;
+            user.PasswordSalt = pair.salt;
+            user.UpdatedAt = DateTime.UtcNow;
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [HttpPost("request-reset")]
+        [AllowAnonymous]
+        public async Task<IActionResult> RequestReset([FromBody] RequestResetDto dto)
+        {
+            var email = dto.Email.Trim().ToLowerInvariant();
+            var user = _context.Users.FirstOrDefault(u => (u.Email ?? "").ToLower() == email);
+            if (user == null) return NoContent();
+            var token = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+            user.PasswordResetToken = token;
+            user.PasswordResetTokenExpires = DateTime.UtcNow.AddMinutes(30);
+            user.UpdatedAt = DateTime.UtcNow;
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Reset requested" });
+        }
+
+        [HttpPost("reset-password")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            var email = dto.Email.Trim().ToLowerInvariant();
+            var user = _context.Users.FirstOrDefault(u => (u.Email ?? "").ToLower() == email);
+            if (user == null) return NotFound();
+            if (user.PasswordResetToken != dto.Token || user.PasswordResetTokenExpires == null || user.PasswordResetTokenExpires < DateTime.UtcNow)
+                return Unauthorized();
+            var pair = _passwordService.HashPassword(dto.NewPassword);
+            user.PasswordHash = pair.hash;
+            user.PasswordSalt = pair.salt;
+            user.PasswordResetToken = null;
+            user.PasswordResetTokenExpires = null;
+            user.UpdatedAt = DateTime.UtcNow;
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [HttpPost("add-admin")]
+        [Authorize]
+        public async Task<IActionResult> AddAdmin([FromBody] AddAdminDto dto)
+        {
+            var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
+            if (!string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase)) return Forbid();
+            var email = dto.Email.Trim().ToLowerInvariant();
+            var exists = _context.Users.Any(u => (u.Email ?? "").ToLower() == email);
+            if (exists) return Conflict();
+            var pair = _passwordService.HashPassword(dto.Password);
+            var user = new Rently.Management.Domain.Entities.User
+            {
+                Name = dto.Name,
+                Email = dto.Email,
+                Phone = dto.Phone,
+                Role = "Admin",
+                ApprovalStatus = "Approved",
+                PasswordHash = pair.hash,
+                PasswordSalt = pair.salt,
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(nameof(AddAdmin), new { id = user.Id }, new { id = user.Id });
+        }
+    }
+}

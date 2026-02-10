@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 namespace Rently.Management.WebApi.DTOs;
 
 public class PaymentStatisticsDto
@@ -46,10 +47,16 @@ public class RefundDto
 
 public class CreatePaymentDto
 {
+    [Required]
+    [Range(1, int.MaxValue)]
     public int BookingId { get; set; }
     public int? UserId { get; set; }
+    [Required]
+    [Range(typeof(decimal), "0.01", "79228162514264337593543950335")]
     public decimal Amount { get; set; }
+    [Required]
     public string Currency { get; set; } = "EGP";
+    [Required]
     public string Status { get; set; } = "Pending";
     public string? Provider { get; set; }
     public string? ProviderPaymentId { get; set; }
@@ -67,14 +74,22 @@ public class UpdatePaymentDto
 
 public class ProcessPayoutDto
 {
+    [Required]
+    [Range(1, int.MaxValue)]
     public int OwnerId { get; set; }
+    [Required]
+    [Range(typeof(decimal), "0.01", "79228162514264337593543950335")]
     public decimal Amount { get; set; }
     public string? Provider { get; set; }
 }
 
 public class ProcessRefundDto
 {
+    [Required]
+    [Range(1, int.MaxValue)]
     public int PaymentId { get; set; }
+    [Required]
+    [Range(typeof(decimal), "0.01", "79228162514264337593543950335")]
     public decimal Amount { get; set; }
     public string? Reason { get; set; }
 }

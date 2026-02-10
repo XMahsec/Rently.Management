@@ -2,6 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using Rently.Management.Domain.Entities;
 using Rently.Management.Domain.Repositories;
 using Rently.Management.WebApi.DTOs;
+using Rently.Management.WebApi.Services;
+using Microsoft.AspNetCore.Authorization;
+using System.Text.Json;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Rently.Management.WebApi.Controllers
 {
@@ -10,10 +15,14 @@ namespace Rently.Management.WebApi.Controllers
     public class PaymentController : ControllerBase
     {
         private readonly IPaymentRepository _paymentRepository;
+        private readonly PaymobService _paymobService;
+        private readonly IConfiguration _configuration;
 
-        public PaymentController(IPaymentRepository paymentRepository)
+        public PaymentController(IPaymentRepository paymentRepository, PaymobService paymobService, IConfiguration configuration)
         {
             _paymentRepository = paymentRepository;
+            _paymobService = paymobService;
+            _configuration = configuration;
         }
 
         [HttpGet("statistics")]
@@ -33,6 +42,177 @@ namespace Rently.Management.WebApi.Controllers
             return Ok(dto);
         }
 
+        [HttpPost("paymob/init")]
+        [Authorize]
+        public async Task<ActionResult<object>> InitPaymob([FromBody] PaymobInitRequestDto dto)
+        {
+            var amountCents = (int)(dto.Amount * 100);
+            var method = (dto.Method ?? "card").ToLowerInvariant();
+            var integrationId = method == "wallet"
+                ? _configuration["Paymob:IntegrationIdWallet"] ?? ""
+                : _configuration["Paymob:IntegrationIdCard"] ?? "";
+            var useIframe = method != "wallet";
+            var (orderId, paymentToken, url) = await _paymobService.InitiateAsync(amountCents, dto.Currency, dto.Email, dto.Name, dto.Phone, integrationId, useIframe);
+            var payment = new Payment
+            {
+                BookingId = dto.BookingId,
+                UserId = dto.UserId,
+                Amount = dto.Amount,
+                Currency = dto.Currency,
+                Status = "Pending",
+                Provider = "Paymob",
+                ProviderPaymentId = orderId,
+                ProviderReceiptUrl = url
+            };
+            var created = await _paymentRepository.CreateAsync(payment);
+            return Ok(new { payment_id = created.Id, order_id = orderId, payment_token = paymentToken, url, method });
+        }
+
+        [HttpGet("paymob/checkout")]
+        [Authorize]
+        public async Task<IActionResult> CheckoutPaymob(
+            [FromQuery] int bookingId,
+            [FromQuery] int? userId,
+            [FromQuery] decimal amount,
+            [FromQuery] string currency = "EGP",
+            [FromQuery] string email = "",
+            [FromQuery] string name = "",
+            [FromQuery] string phone = "",
+            [FromQuery] string method = "card")
+        {
+            var amountCents = (int)(amount * 100);
+            method = (method ?? "card").ToLowerInvariant();
+            var integrationId = method == "wallet"
+                ? _configuration["Paymob:IntegrationIdWallet"] ?? ""
+                : _configuration["Paymob:IntegrationIdCard"] ?? "";
+            var useIframe = method != "wallet";
+            var (orderId, paymentToken, url) = await _paymobService.InitiateAsync(amountCents, currency, email, name, phone, integrationId, useIframe);
+            var payment = new Payment
+            {
+                BookingId = bookingId,
+                UserId = userId,
+                Amount = amount,
+                Currency = currency,
+                Status = "Pending",
+                Provider = "Paymob",
+                ProviderPaymentId = orderId,
+                ProviderReceiptUrl = url
+            };
+            await _paymentRepository.CreateAsync(payment);
+
+            if (useIframe)
+            {
+                var html = $"<html><head><meta charset=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/></head><body style=\"margin:0;padding:0\"><iframe src=\"{url}\" style=\"border:0;width:100%;height:100vh\"></iframe></body></html>";
+                return Content(html, "text/html");
+            }
+            else
+            {
+                return Redirect(url);
+            }
+        }
+
+        [HttpGet("test/iframe")]
+        [AllowAnonymous]
+        public IActionResult TestIframe([FromQuery] string url)
+        {
+            if (string.IsNullOrWhiteSpace(url)) return BadRequest();
+            var html = $"<html><head><meta charset=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/></head><body style=\"margin:0;padding:0\"><iframe src=\"{url}\" style=\"border:0;width:100%;height:100vh\"></iframe></body></html>";
+            return Content(html, "text/html");
+        }
+
+        [HttpGet("paymob/callback")]
+        [AllowAnonymous]
+        public async Task<IActionResult> PaymobCallback()
+        {
+            var hmac = Request.Query["hmac"].ToString();
+            var dict = Request.Query.ToDictionary(k => k.Key, v => v.Value.ToString());
+            var valid = _paymobService.ValidateHmac(dict, hmac);
+            if (!valid) return BadRequest();
+            var success = dict.TryGetValue("success", out var s) && s == "true";
+            var orderId = dict.TryGetValue("order", out var o) ? o : "";
+            var payment = (await _paymentRepository.GetTransactionsAsync(orderId, "All", null, 1, 1)).Data.FirstOrDefault();
+            if (payment != null)
+            {
+                payment.Status = success ? "Succeeded" : "Failed";
+                await _paymentRepository.UpdateAsync(payment);
+                await NotifyPartnerAsync(payment);
+            }
+            return Ok();
+        }
+
+        [HttpPost("paymob/webhook")]
+        [AllowAnonymous]
+        public async Task<IActionResult> PaymobWebhook()
+        {
+            using var reader = new StreamReader(Request.Body);
+            var body = await reader.ReadToEndAsync();
+            var json = JsonDocument.Parse(body);
+            var obj = json.RootElement;
+            var hmac = Request.Query["hmac"].ToString();
+            var fields = new Dictionary<string, string>();
+            void add(string path, string key)
+            {
+                try
+                {
+                    var parts = path.Split('.');
+                    var cur = obj;
+                    foreach (var p in parts)
+                        cur = cur.GetProperty(p);
+                    fields[key] = cur.ToString();
+                }
+                catch { }
+            }
+            add("obj.amount_cents", "amount_cents");
+            add("obj.created_at", "created_at");
+            add("obj.currency", "currency");
+            add("obj.error_occured", "error_occured");
+            add("obj.has_parent_transaction", "has_parent_transaction");
+            add("obj.id", "id");
+            add("obj.integration_id", "integration_id");
+            add("obj.is_3d_secure", "is_3d_secure");
+            add("obj.is_auth", "is_auth");
+            add("obj.is_capture", "is_capture");
+            add("obj.is_refunded", "is_refunded");
+            add("obj.is_standalone_payment", "is_standalone_payment");
+            add("obj.is_voided", "is_voided");
+            add("obj.order.id", "order.id");
+            add("obj.owner", "owner");
+            add("obj.pending", "pending");
+            add("obj.source_data.pan", "source_data.pan");
+            add("obj.source_data.sub_type", "source_data.sub_type");
+            add("obj.source_data.type", "source_data.type");
+            add("obj.success", "success");
+            var valid = _paymobService.ValidateHmac(fields, hmac);
+            if (!valid) return BadRequest();
+            var orderId = fields.TryGetValue("order.id", out var oid) ? oid : "";
+            var success = fields.TryGetValue("success", out var sv) && sv == "true";
+            var payment = (await _paymentRepository.GetTransactionsAsync(orderId, "All", null, 1, 1)).Data.FirstOrDefault();
+            if (payment != null)
+            {
+                payment.Status = success ? "Succeeded" : "Failed";
+                payment.ProviderPaymentId = fields.TryGetValue("id", out var pid) ? pid : payment.ProviderPaymentId;
+                await _paymentRepository.UpdateAsync(payment);
+                await NotifyPartnerAsync(payment);
+            }
+            return Ok();
+        }
+
+        private async Task NotifyPartnerAsync(Payment payment)
+        {
+            var url = _configuration["Paymob:PartnerWebhookUrl"];
+            if (string.IsNullOrWhiteSpace(url)) return;
+            using var client = new HttpClient();
+            var payload = new
+            {
+                payment_id = payment.Id,
+                booking_id = payment.BookingId,
+                status = payment.Status,
+                amount = payment.Amount,
+                currency = payment.Currency,
+                provider_payment_id = payment.ProviderPaymentId
+            };
+            try { await client.PostAsJsonAsync(url, payload); } catch { }
+        }
         [HttpGet("transactions")]
         public async Task<ActionResult<PagedResultDto<PaymentDto>>> GetTransactions(
             [FromQuery] string? search = null,

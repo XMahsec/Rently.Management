@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Rently.Management.Domain.Repositories;
 using Rently.Management.WebApi.DTOs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Rently.Management.WebApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class RequestController : ControllerBase
     {
         private readonly IRequestRepository _requestRepository;

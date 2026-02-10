@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
+using Rently.Management.WebApi;
 
 namespace Rently.Management.Infrastructure.Data
 {

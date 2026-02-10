@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Rently.Management.Domain.Entities;
 
@@ -25,6 +25,10 @@ namespace Rently.Management.Infrastructure.Data.Configurations
             builder.Property(u => u.PayoutDetails).HasMaxLength(500);
             builder.Property(u => u.BillingCountry).HasMaxLength(100);
             builder.Property(u => u.ZipCode).HasMaxLength(20);
+
+            builder.Property(u => u.PasswordHash).HasMaxLength(256);
+            builder.Property(u => u.PasswordSalt).HasMaxLength(128);
+            builder.Property(u => u.PasswordResetToken).HasMaxLength(128);
 
             // صور (مسارات أو URLs)
             builder.Property(u => u.IdImage).HasMaxLength(500);

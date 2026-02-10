@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Rently.Management.Domain.Entities;
 using Rently.Management.Domain.Common;
-namespace Rently.Management.Infrastructure.Data
+using Rently.Management.Infrastructure.Data;
+
+namespace Rently.Management.WebApi
 {
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
     {
