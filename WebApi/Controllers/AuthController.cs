@@ -12,6 +12,9 @@ namespace Rently.Management.WebApi.Controllers
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
+        /// <summary>
+        /// مصادقة JWT: تسجيل الدخول وإصدار توكن للوصول إلى المسارات المحمية.
+        /// </summary>
         private readonly IUserRepository _userRepository;
         private readonly IConfiguration _configuration;
 
@@ -23,6 +26,10 @@ namespace Rently.Management.WebApi.Controllers
 
         [HttpPost("login")]
         [Microsoft.AspNetCore.Authorization.AllowAnonymous]
+        /// <summary>
+        /// تسجيل الدخول بالأدمن من الإعدادات (Admin:Email/Admin:Password) وإصدار JWT.
+        /// يعيد Claims (Name/Email/Role/UserId) داخل التوكن.
+        /// </summary>
         public async Task<ActionResult<LoginResponseDto>> Login([FromBody] LoginRequestDto dto)
         {
             if (string.IsNullOrWhiteSpace(dto.Email))

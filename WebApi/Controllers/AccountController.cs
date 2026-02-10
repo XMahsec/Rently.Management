@@ -10,6 +10,9 @@ namespace Rently.Management.WebApi.Controllers
     [Route("api/[controller]")]
     public class AccountController : ControllerBase
     {
+        /// <summary>
+        /// إدارة حساب الأدمن: تغيير الاسم/كلمة المرور، طلب وإعادة تعيين كلمة المرور، إضافة أدمن.
+        /// </summary>
         private readonly ApplicationDbContext _context;
         private readonly PasswordService _passwordService;
 
@@ -21,6 +24,9 @@ namespace Rently.Management.WebApi.Controllers
 
         [HttpPost("change-name")]
         [Authorize]
+        /// <summary>
+        /// تحديث اسم المستخدم الحالي باستخدام Claim Sub من التوكن.
+        /// </summary>
         public async Task<IActionResult> ChangeName([FromBody] ChangeNameDto dto)
         {
             var sub = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
@@ -36,6 +42,9 @@ namespace Rently.Management.WebApi.Controllers
 
         [HttpPost("change-password")]
         [Authorize]
+        /// <summary>
+        /// تغيير كلمة المرور بعد التحقق من الحالية، ثم تخزين الهاش والسولت الجديدين.
+        /// </summary>
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
         {
             var sub = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
@@ -56,6 +65,9 @@ namespace Rently.Management.WebApi.Controllers
 
         [HttpPost("request-reset")]
         [AllowAnonymous]
+        /// <summary>
+        /// طلب إعادة تعيين كلمة المرور: إنشاء توكن مؤقت صالح لمدة 30 دقيقة.
+        /// </summary>
         public async Task<IActionResult> RequestReset([FromBody] RequestResetDto dto)
         {
             var email = dto.Email.Trim().ToLowerInvariant();
@@ -72,6 +84,9 @@ namespace Rently.Management.WebApi.Controllers
 
         [HttpPost("reset-password")]
         [AllowAnonymous]
+        /// <summary>
+        /// إعادة تعيين كلمة المرور باستخدام التوكن المؤقت، ثم إزالته بعد التحديث.
+        /// </summary>
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
         {
             var email = dto.Email.Trim().ToLowerInvariant();
@@ -92,6 +107,9 @@ namespace Rently.Management.WebApi.Controllers
 
         [HttpPost("add-admin")]
         [Authorize]
+        /// <summary>
+        /// إضافة مستخدم أدمن جديد (يتطلب Role=Admin في التوكن).
+        /// </summary>
         public async Task<IActionResult> AddAdmin([FromBody] AddAdminDto dto)
         {
             var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";

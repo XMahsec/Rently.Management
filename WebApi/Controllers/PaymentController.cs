@@ -14,6 +14,10 @@ namespace Rently.Management.WebApi.Controllers
     [Route("api/[controller]")]
     public class PaymentController : ControllerBase
     {
+        /// <summary>
+        /// إدارة المدفوعات وبوابة Paymob (إحصائيات، معاملات، رد الأموال، Callback/Webhook).
+        /// هذا الكنترولر يحتوي مسارات بطاقة/محفظة، ويستخدم HMAC للتحقق من صحة ردود Paymob.
+        /// </summary>
         private readonly IPaymentRepository _paymentRepository;
         private readonly PaymobService _paymobService;
         private readonly IConfiguration _configuration;
@@ -44,6 +48,10 @@ namespace Rently.Management.WebApi.Controllers
 
         [HttpPost("paymob/init")]
         [Authorize]
+        /// <summary>
+        /// تهيئة دفع عبر Paymob وإرجاع orderId و paymentToken ورابط الدفع.
+        /// method: card (يعرض iframe) أو wallet (يعمل Redirect).
+        /// </summary>
         public async Task<ActionResult<object>> InitPaymob([FromBody] PaymobInitRequestDto dto)
         {
             var amountCents = (int)(dto.Amount * 100);
@@ -70,6 +78,10 @@ namespace Rently.Management.WebApi.Controllers
 
         [HttpGet("paymob/checkout")]
         [Authorize]
+        /// <summary>
+        /// مسار مباشر للدفع: يعرض iframe للبطاقة أو Redirect للمحفظة.
+        /// يسجّل عملية الدفع بحالة Pending ويرجع HTML أو Redirect.
+        /// </summary>
         public async Task<IActionResult> CheckoutPaymob(
             [FromQuery] int bookingId,
             [FromQuery] int? userId,
@@ -113,6 +125,9 @@ namespace Rently.Management.WebApi.Controllers
 
         [HttpGet("test/iframe")]
         [AllowAnonymous]
+        /// <summary>
+        /// اختبار عرض iframe لأي رابط (للتجارب السريعة).
+        /// </summary>
         public IActionResult TestIframe([FromQuery] string url)
         {
             if (string.IsNullOrWhiteSpace(url)) return BadRequest();
@@ -122,6 +137,10 @@ namespace Rently.Management.WebApi.Controllers
 
         [HttpGet("paymob/callback")]
         [AllowAnonymous]
+        /// <summary>
+        /// Callback من Paymob بعد الدفع (GET).
+        /// يتحقق من HMAC ويحدّث حالة الدفع ويخطر الشريك إن وجد.
+        /// </summary>
         public async Task<IActionResult> PaymobCallback()
         {
             var hmac = Request.Query["hmac"].ToString();
@@ -142,6 +161,10 @@ namespace Rently.Management.WebApi.Controllers
 
         [HttpPost("paymob/webhook")]
         [AllowAnonymous]
+        /// <summary>
+        /// Webhook من Paymob (POST).
+        /// يتحقق من HMAC ثم يحدّث حالة الدفع ويُخطر الشريك عبر PartnerWebhookUrl.
+        /// </summary>
         public async Task<IActionResult> PaymobWebhook()
         {
             using var reader = new StreamReader(Request.Body);
@@ -214,6 +237,9 @@ namespace Rently.Management.WebApi.Controllers
             try { await client.PostAsJsonAsync(url, payload); } catch { }
         }
         [HttpGet("transactions")]
+        /// <summary>
+        /// إرجاع معاملات الدفع مع تصفية وترقيم الصفحات.
+        /// </summary>
         public async Task<ActionResult<PagedResultDto<PaymentDto>>> GetTransactions(
             [FromQuery] string? search = null,
             [FromQuery] string? type = null,
