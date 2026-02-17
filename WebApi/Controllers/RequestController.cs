@@ -75,7 +75,7 @@ namespace Rently.Management.WebApi.Controllers
                     SubmittedOn = user.CreatedAt,
                     Status = user.ApprovalStatus ?? "Pending",
                     DrivingLicenseNumber = user.LicenseNumber,
-                    IdNumber = user.ZipCode, // يمكن تغييرها لو أضفت حقل خاص بالهوية
+                    IdNumber = user.ZipCode, // Can be adjusted if a dedicated ID field is added
                     IdImageUrl = user.IdImage,
                     LicenseImageUrl = user.LicenseImage,
                     SelfieImageUrl = user.SelfieImage

@@ -30,7 +30,7 @@ namespace Rently.Management.Infrastructure.Data.Configurations
             builder.Property(u => u.PasswordSalt).HasMaxLength(128);
             builder.Property(u => u.PasswordResetToken).HasMaxLength(128);
 
-            // صور (مسارات أو URLs)
+            // Images (paths or URLs)
             builder.Property(u => u.IdImage).HasMaxLength(500);
             builder.Property(u => u.LicenseImage).HasMaxLength(500);
             builder.Property(u => u.PassportImage).HasMaxLength(500);
@@ -38,16 +38,16 @@ namespace Rently.Management.Infrastructure.Data.Configurations
             builder.Property(u => u.ResidenceProofImage).HasMaxLength(500);
             builder.Property(u => u.JobProofImage).HasMaxLength(500);
 
-            // Indexes مفيدة
+            // Useful indexes
             builder.HasIndex(u => u.Email).IsUnique();
             builder.HasIndex(u => u.Phone).IsUnique();
             builder.HasIndex(u => u.LicenseNumber).IsUnique();
 
-            // علاقات
+            // Relationships
             builder.HasMany(u => u.OwnedCars)
                    .WithOne(c => c.Owner)
                    .HasForeignKey(c => c.OwnerId)
-                   .OnDelete(DeleteBehavior.Restrict); // لا تحذف السيارات لو حذفت المستخدم
+                   .OnDelete(DeleteBehavior.Restrict); // Do not delete cars when a user is deleted
 
             builder.HasMany(u => u.BookingsAsRenter)
                    .WithOne(b => b.Renter)

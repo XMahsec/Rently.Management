@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Rently.Management.Domain.Entities;
 
@@ -23,19 +23,19 @@ namespace Rently.Management.Infrastructure.Data.Configurations
             builder.Property(c => c.LicensePlate).HasMaxLength(20).IsRequired();
             builder.Property(c => c.CarLicenseImage).HasMaxLength(500);
 
-            // السعر - أهم حقل decimal
+            // PricePerDay - key decimal field
             builder.Property(c => c.PricePerDay)
                    .HasPrecision(18, 2)
                    .IsRequired();
 
             builder.Property(c => c.AverageRating)
-                   .HasPrecision(3, 2); // مثال: 4.75
+                   .HasPrecision(3, 2); // e.g., 4.75
 
             // Indexes
             builder.HasIndex(c => c.LicensePlate).IsUnique();
             builder.HasIndex(c => c.OwnerId);
 
-            // علاقات
+            // Relationships
             builder.HasOne(c => c.Owner)
                    .WithMany(u => u.OwnedCars)
                    .HasForeignKey(c => c.OwnerId)

@@ -17,7 +17,7 @@ namespace Rently.Management.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.10")
+                .HasAnnotation("ProductVersion", "9.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -26,47 +26,59 @@ namespace Rently.Management.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CarId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("car_id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
 
                     b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasColumnName("end_date");
 
                     b.Property<decimal>("PaidAmount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("paid_amount");
 
                     b.Property<DateTime?>("PaymentConfirmedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasColumnName("payment_confirmed_at");
 
                     b.Property<int>("RenterId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("renter_id");
 
                     b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasColumnName("start_date");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("status");
 
                     b.Property<decimal>("TotalPrice")
                         .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("total_price");
 
                     b.Property<string>("TransactionId")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("transaction_id");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
 
                     b.HasKey("Id");
 
@@ -76,7 +88,7 @@ namespace Rently.Management.Migrations
 
                     b.HasIndex("TransactionId")
                         .IsUnique()
-                        .HasFilter("[TransactionId] IS NOT NULL");
+                        .HasFilter("[transaction_id] IS NOT NULL");
 
                     b.ToTable("Bookings", (string)null);
                 });
@@ -85,71 +97,88 @@ namespace Rently.Management.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("AverageRating")
                         .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("average_rating");
 
                     b.Property<string>("Brand")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("brand");
 
                     b.Property<string>("CarLicenseImage")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("car_license_image");
 
                     b.Property<string>("Color")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("color");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Description")
                         .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
+                        .HasColumnType("nvarchar(2000)")
+                        .HasColumnName("description");
 
                     b.Property<string>("Features")
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("features");
 
                     b.Property<string>("LicensePlate")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("license_plate");
 
                     b.Property<string>("LocationCity")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("location_city");
 
                     b.Property<string>("Model")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("model");
 
                     b.Property<int>("OwnerId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("owner_id");
 
                     b.Property<decimal>("PricePerDay")
                         .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("price_per_day");
 
                     b.Property<string>("Status")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("status");
 
                     b.Property<string>("Transmission")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("transmission");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
 
                     b.Property<int>("Year")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("year");
 
                     b.HasKey("Id");
 
@@ -165,17 +194,20 @@ namespace Rently.Management.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CarId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("car_id");
 
                     b.Property<string>("ImagePath")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("image_path");
 
                     b.HasKey("Id");
 
@@ -188,22 +220,27 @@ namespace Rently.Management.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CarId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("car_id");
 
                     b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasColumnName("end_date");
 
                     b.Property<string>("Reason")
                         .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("reason");
 
                     b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasColumnName("start_date");
 
                     b.HasKey("Id");
 
@@ -215,13 +252,16 @@ namespace Rently.Management.Migrations
             modelBuilder.Entity("Rently.Management.Domain.Entities.Favorite", b =>
                 {
                     b.Property<int>("UserId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("user_id");
 
                     b.Property<int>("CarId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("car_id");
 
                     b.Property<int>("Id")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     b.HasKey("UserId", "CarId");
 
@@ -234,22 +274,27 @@ namespace Rently.Management.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Content")
                         .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)");
+                        .HasColumnType("nvarchar(4000)")
+                        .HasColumnName("content");
 
                     b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("is_read");
 
                     b.Property<int>("ReceiverId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("receiver_id");
 
                     b.Property<int>("SenderId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("sender_id");
 
                     b.HasKey("Id");
 
@@ -264,27 +309,33 @@ namespace Rently.Management.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
+                        .HasColumnType("bit")
+                        .HasColumnName("is_read");
 
                     b.Property<string>("Message")
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("message");
 
                     b.Property<string>("Title")
                         .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("title");
 
                     b.Property<string>("Type")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("type");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("user_id");
 
                     b.HasKey("Id");
 
@@ -297,17 +348,20 @@ namespace Rently.Management.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("OtpHash")
                         .IsRequired()
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("otp_hash");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("user_id");
 
                     b.HasKey("Id");
 
@@ -320,55 +374,68 @@ namespace Rently.Management.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("Amount")
                         .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("amount");
 
                     b.Property<int>("BookingId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("booking_id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Currency")
                         .IsRequired()
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("nvarchar(10)")
+                        .HasColumnName("currency");
 
                     b.Property<string>("FailureCode")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("failure_code");
 
                     b.Property<string>("FailureMessage")
                         .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("failure_message");
 
                     b.Property<string>("Provider")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("provider");
 
                     b.Property<string>("ProviderPaymentId")
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("provider_payment_id");
 
                     b.Property<string>("ProviderReceiptUrl")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("provider_receipt_url");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("status");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
 
                     b.Property<int?>("UserId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("user_id");
 
                     b.HasKey("Id");
 
@@ -385,28 +452,35 @@ namespace Rently.Management.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CarId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("car_id");
 
                     b.Property<string>("Comment")
                         .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
+                        .HasColumnType("nvarchar(2000)")
+                        .HasColumnName("comment");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
 
                     b.Property<int>("Rating")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("rating");
 
                     b.Property<int>("RenterId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("renter_id");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
 
                     b.HasKey("Id");
 
@@ -421,101 +495,141 @@ namespace Rently.Management.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ApprovalStatus")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("approval_status");
 
                     b.Property<string>("BillingCountry")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("billing_country");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
 
                     b.Property<string>("Email")
                         .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("email");
 
                     b.Property<string>("IdImage")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("id_image");
 
                     b.Property<string>("JobProofImage")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("job_proof_image");
 
                     b.Property<string>("LicenseImage")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("license_image");
 
                     b.Property<string>("LicenseNumber")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("license_number");
 
                     b.Property<string>("Name")
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("name");
 
                     b.Property<string>("Nationality")
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("nationality");
 
                     b.Property<string>("PassportImage")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("passport_image");
+
+                    b.Property<string>("PasswordHash")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)")
+                        .HasColumnName("password_hash");
+
+                    b.Property<string>("PasswordResetToken")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)")
+                        .HasColumnName("password_reset_token");
+
+                    b.Property<DateTime?>("PasswordResetTokenExpires")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("password_reset_token_expires");
+
+                    b.Property<string>("PasswordSalt")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)")
+                        .HasColumnName("password_salt");
 
                     b.Property<string>("PayoutDetails")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("payout_details");
 
                     b.Property<string>("PayoutMethod")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("payout_method");
 
                     b.Property<string>("Phone")
                         .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("phone");
 
                     b.Property<string>("PreferredLanguage")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("preferred_language");
 
                     b.Property<string>("ResidenceProofImage")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("residence_proof_image");
 
                     b.Property<string>("Role")
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("role");
 
                     b.Property<string>("SelfieImage")
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("selfie_image");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
 
                     b.Property<string>("ZipCode")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("zip_code");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
                         .IsUnique()
-                        .HasFilter("[Email] IS NOT NULL");
+                        .HasFilter("[email] IS NOT NULL");
 
                     b.HasIndex("LicenseNumber")
                         .IsUnique()
-                        .HasFilter("[LicenseNumber] IS NOT NULL");
+                        .HasFilter("[license_number] IS NOT NULL");
 
                     b.HasIndex("Phone")
                         .IsUnique()
-                        .HasFilter("[Phone] IS NOT NULL");
+                        .HasFilter("[phone] IS NOT NULL");
 
                     b.ToTable("Users", (string)null);
                 });

@@ -9,7 +9,7 @@ namespace Rently.Management.WebApi
     {
 
         // ───────────────────────────────────────────────
-        // DbSets لكل الجداول الموجودة في الـ ERD
+        // DbSets for all tables in the ERD
         // ───────────────────────────────────────────────
 
         public DbSet<User> Users { get; set; }
@@ -29,12 +29,13 @@ namespace Rently.Management.WebApi
             base.OnModelCreating(modelBuilder);
 
             // ----------------------------------------------------------------
-            // 1. تطبيق كل الـ fluent configurations من مجلد Configurations
+            // 1. Apply all fluent configurations from the Configurations folder
             // ----------------------------------------------------------------
 
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
           
             modelBuilder.ApplyDecimalPrecision();
+            modelBuilder.UseSnakeCaseColumnNames();
             modelBuilder.Entity<Car>()
                 .HasOne(c => c.Owner)
                 .WithMany(u => u.OwnedCars)
@@ -85,8 +86,8 @@ namespace Rently.Management.WebApi
         }
 
         // --------------------------------------------------------------------
-        // Override SaveChanges لإضافة auditing أو soft-delete أو timestamps
-        // (اختياري – شائع جداً في مشاريع حقيقية)
+        // Override SaveChanges to add auditing or timestamps
+        // (Optional – common in real projects)
         // --------------------------------------------------------------------
         public override int SaveChanges()
         {
@@ -113,7 +114,7 @@ namespace Rently.Management.WebApi
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            // نفس المنطق السابق
+            // Same logic as above
             var entries = ChangeTracker
                 .Entries()
                 .Where(e => e.Entity is IAuditableEntity && (

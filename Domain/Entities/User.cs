@@ -9,7 +9,7 @@ public class User : AuditableEntity
     public string? Name { get; set; }
     public string? Email { get; set; }
     public string? Phone { get; set; }
-    public string? Role { get; set; }               // "Owner", "Renter", "Admin" أو enum
+    public string? Role { get; set; }               // "Owner", "Renter", "Admin" or enum
     public string? Nationality { get; set; }
     public string? PreferredLanguage { get; set; }
     public string? LicenseNumber { get; set; }
@@ -24,7 +24,7 @@ public class User : AuditableEntity
     public string? PasswordResetToken { get; set; }
     public DateTime? PasswordResetTokenExpires { get; set; }
 
-    // صور التحقق (غالباً مسارات أو URLs)
+    // Verification images (usually paths or URLs)
     public string? IdImage { get; set; }
     public string? LicenseImage { get; set; }
     public string? PassportImage { get; set; }
@@ -32,7 +32,7 @@ public class User : AuditableEntity
     public string? ResidenceProofImage { get; set; }
     public string? JobProofImage { get; set; }
 
-    // Navigation properties (العلاقات)
+    // Navigation properties (relationships)
     public List<Car> OwnedCars { get; set; } = new();
     public List<Booking> BookingsAsRenter { get; set; } = new();
     public List<Review> Reviews { get; set; } = new();

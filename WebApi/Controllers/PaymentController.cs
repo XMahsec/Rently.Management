@@ -15,8 +15,8 @@ namespace Rently.Management.WebApi.Controllers
     public class PaymentController : ControllerBase
     {
         /// <summary>
-        /// إدارة المدفوعات وبوابة Paymob (إحصائيات، معاملات، رد الأموال، Callback/Webhook).
-        /// هذا الكنترولر يحتوي مسارات بطاقة/محفظة، ويستخدم HMAC للتحقق من صحة ردود Paymob.
+        /// Payments management and Paymob gateway (statistics, transactions, refunds, callback/webhook).
+        /// This controller exposes card/wallet flows and uses HMAC to validate Paymob responses.
         /// </summary>
         private readonly IPaymentRepository _paymentRepository;
         private readonly PaymobService _paymobService;
@@ -49,8 +49,8 @@ namespace Rently.Management.WebApi.Controllers
         [HttpPost("paymob/init")]
         [Authorize]
         /// <summary>
-        /// تهيئة دفع عبر Paymob وإرجاع orderId و paymentToken ورابط الدفع.
-        /// method: card (يعرض iframe) أو wallet (يعمل Redirect).
+        /// Initialize payment via Paymob and return orderId, paymentToken, and payment URL.
+        /// method: card (renders iframe) or wallet (redirect flow).
         /// </summary>
         public async Task<ActionResult<object>> InitPaymob([FromBody] PaymobInitRequestDto dto)
         {
@@ -79,8 +79,8 @@ namespace Rently.Management.WebApi.Controllers
         [HttpGet("paymob/checkout")]
         [Authorize]
         /// <summary>
-        /// مسار مباشر للدفع: يعرض iframe للبطاقة أو Redirect للمحفظة.
-        /// يسجّل عملية الدفع بحالة Pending ويرجع HTML أو Redirect.
+        /// Direct payment route: returns iframe for card or Redirect for wallet.
+        /// Saves a Pending payment and returns HTML or Redirect.
         /// </summary>
         public async Task<IActionResult> CheckoutPaymob(
             [FromQuery] int bookingId,
@@ -126,7 +126,7 @@ namespace Rently.Management.WebApi.Controllers
         [HttpGet("test/iframe")]
         [AllowAnonymous]
         /// <summary>
-        /// اختبار عرض iframe لأي رابط (للتجارب السريعة).
+        /// Test rendering an iframe for any URL (quick experiments).
         /// </summary>
         public IActionResult TestIframe([FromQuery] string url)
         {
@@ -138,8 +138,8 @@ namespace Rently.Management.WebApi.Controllers
         [HttpGet("paymob/callback")]
         [AllowAnonymous]
         /// <summary>
-        /// Callback من Paymob بعد الدفع (GET).
-        /// يتحقق من HMAC ويحدّث حالة الدفع ويخطر الشريك إن وجد.
+        /// Paymob callback after payment (GET).
+        /// Validates HMAC, updates payment status, and notifies partner if configured.
         /// </summary>
         public async Task<IActionResult> PaymobCallback()
         {
@@ -162,8 +162,8 @@ namespace Rently.Management.WebApi.Controllers
         [HttpPost("paymob/webhook")]
         [AllowAnonymous]
         /// <summary>
-        /// Webhook من Paymob (POST).
-        /// يتحقق من HMAC ثم يحدّث حالة الدفع ويُخطر الشريك عبر PartnerWebhookUrl.
+        /// Paymob webhook (POST).
+        /// Validates HMAC, updates payment status, and notifies partner via PartnerWebhookUrl.
         /// </summary>
         public async Task<IActionResult> PaymobWebhook()
         {
@@ -238,7 +238,7 @@ namespace Rently.Management.WebApi.Controllers
         }
         [HttpGet("transactions")]
         /// <summary>
-        /// إرجاع معاملات الدفع مع تصفية وترقيم الصفحات.
+        /// Return payments with filtering and paging.
         /// </summary>
         public async Task<ActionResult<PagedResultDto<PaymentDto>>> GetTransactions(
             [FromQuery] string? search = null,

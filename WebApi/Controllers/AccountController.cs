@@ -11,7 +11,7 @@ namespace Rently.Management.WebApi.Controllers
     public class AccountController : ControllerBase
     {
         /// <summary>
-        /// إدارة حساب الأدمن: تغيير الاسم/كلمة المرور، طلب وإعادة تعيين كلمة المرور، إضافة أدمن.
+        /// Admin account management: change name/password, request/reset password, add admin.
         /// </summary>
         private readonly ApplicationDbContext _context;
         private readonly PasswordService _passwordService;
@@ -25,7 +25,7 @@ namespace Rently.Management.WebApi.Controllers
         [HttpPost("change-name")]
         [Authorize]
         /// <summary>
-        /// تحديث اسم المستخدم الحالي باستخدام Claim Sub من التوكن.
+        /// Update current user's display name using the JWT 'sub' claim.
         /// </summary>
         public async Task<IActionResult> ChangeName([FromBody] ChangeNameDto dto)
         {
@@ -43,7 +43,7 @@ namespace Rently.Management.WebApi.Controllers
         [HttpPost("change-password")]
         [Authorize]
         /// <summary>
-        /// تغيير كلمة المرور بعد التحقق من الحالية، ثم تخزين الهاش والسولت الجديدين.
+        /// Change password after verifying the current one; store new hash and salt.
         /// </summary>
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
         {
@@ -66,7 +66,7 @@ namespace Rently.Management.WebApi.Controllers
         [HttpPost("request-reset")]
         [AllowAnonymous]
         /// <summary>
-        /// طلب إعادة تعيين كلمة المرور: إنشاء توكن مؤقت صالح لمدة 30 دقيقة.
+        /// Request password reset: create a temporary token valid for 30 minutes.
         /// </summary>
         public async Task<IActionResult> RequestReset([FromBody] RequestResetDto dto)
         {
@@ -85,7 +85,7 @@ namespace Rently.Management.WebApi.Controllers
         [HttpPost("reset-password")]
         [AllowAnonymous]
         /// <summary>
-        /// إعادة تعيين كلمة المرور باستخدام التوكن المؤقت، ثم إزالته بعد التحديث.
+        /// Reset password using the temporary token, then clear it after update.
         /// </summary>
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
         {
@@ -108,7 +108,7 @@ namespace Rently.Management.WebApi.Controllers
         [HttpPost("add-admin")]
         [Authorize]
         /// <summary>
-        /// إضافة مستخدم أدمن جديد (يتطلب Role=Admin في التوكن).
+        /// Add a new admin user (requires Role=Admin in the JWT).
         /// </summary>
         public async Task<IActionResult> AddAdmin([FromBody] AddAdminDto dto)
         {

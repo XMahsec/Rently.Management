@@ -18,7 +18,7 @@ public class Car : AuditableEntity
     public string? Color { get; set; }
     public string? LocationCity { get; set; }
     public decimal AverageRating { get; set; }
-    public string? Features { get; set; }           // comma separated أو JSON
+    public string? Features { get; set; }           // comma-separated or JSON
     public string? Description { get; set; }
     public string? LicensePlate { get; set; }
     public string? CarLicenseImage { get; set; }
