@@ -335,6 +335,27 @@
           }
         },
         {
+          "name": "Paymob Checkout (wallet redirect)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/payment/paymob/checkout?bookingId=1&userId=1&amount=100&currency=EGP&email=user@example.com&name=User%20Name&phone=01000000000&method=wallet",
+              "host": ["{{baseUrl}}"],
+              "path": ["api","payment","paymob","checkout"],
+              "query": [
+                { "key": "bookingId", "value": "1" },
+                { "key": "userId", "value": "1" },
+                { "key": "amount", "value": "100" },
+                { "key": "currency", "value": "EGP" },
+                { "key": "email", "value": "user@example.com" },
+                { "key": "name", "value": "User Name" },
+                { "key": "phone", "value": "01000000000" },
+                { "key": "method", "value": "wallet" }
+              ]
+            }
+          }
+        },
+        {
           "name": "Test Iframe",
           "request": {
             "auth": { "type": "noauth" },
