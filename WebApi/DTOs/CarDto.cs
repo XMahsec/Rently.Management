@@ -5,7 +5,7 @@ public class CarDto
 {
     public int Id { get; set; }
     public string CarName { get; set; } = ""; // "Kia Sportage 2019"
-    public string PlateNumber { get; set; } = ""; // "1234 | أ ب ت"
+    public string PlateNumber { get; set; } = ""; // "1234 | ABC"
     public string OwnerName { get; set; } = ""; // "Basmala"
     public decimal PricePerDay { get; set; }
     public string Status { get; set; } = ""; // "Available", "On Trip", "Pending", "Offline"

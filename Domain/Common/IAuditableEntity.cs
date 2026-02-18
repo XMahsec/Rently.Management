@@ -1,9 +1,9 @@
-﻿// Domain/Common/IAuditableEntity.cs
+// Domain/Common/IAuditableEntity.cs
 namespace Rently.Management.Domain.Common;
 
 public interface IAuditableEntity
 {
     DateTime CreatedAt { get; set; }
     DateTime? UpdatedAt { get; set; }
-    // لو عايز تضيف: string? CreatedBy, string? UpdatedBy, bool IsDeleted ...
+    // Optional: add string? CreatedBy, string? UpdatedBy, bool IsDeleted ...
 }

@@ -39,12 +39,12 @@ namespace Rently.Management.Infrastructure.Data.Configurations
             builder.Property(p => p.FailureMessage)
                    .HasMaxLength(1000);
 
-            // Indexes مفيدة للبحث وتتبع العمليات
+            // Indexes useful for search and tracking operations
             builder.HasIndex(p => p.BookingId);
             builder.HasIndex(p => p.UserId);
             builder.HasIndex(p => p.ProviderPaymentId).IsUnique(false);
 
-            // علاقات
+            // Relationships
             builder.HasOne(p => p.Booking)
                    .WithMany(b => b.Payments)
                    .HasForeignKey(p => p.BookingId)

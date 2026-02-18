@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using Rently.Management.WebApi;
@@ -13,7 +13,7 @@ namespace Rently.Management.Infrastructure.Data
             var basePath = Directory.GetCurrentDirectory();
 
             var configuration = new ConfigurationBuilder()
-                .SetBasePath(Path.Combine(basePath, "WebApi")) // اسم مشروع الويب
+                .SetBasePath(Path.Combine(basePath, "WebApi")) // Web project name
                 .AddJsonFile("appsettings.json", optional: false)
                 .Build();
 

@@ -14,10 +14,10 @@ public class Booking : AuditableEntity
 
     public string? Status { get; set; }             // "Pending", "Confirmed", "Completed", "Cancelled"...
     public string? TransactionId { get; set; }
-    public decimal TotalPrice { get; set; }             // ← لو مش موجود، أضفه
-    public decimal PaidAmount { get; set; }             // المبلغ الفعلي اللي اتدفع
-    public DateTime? PaymentConfirmedAt { get; set; }   // تاريخ تأكيد الدفع
-    // Navigation (اختياري في API responses إذا ما كنتش عايز تُرجعهم دايماً)
+    public decimal TotalPrice { get; set; }             // Total booking price
+    public decimal PaidAmount { get; set; }             // Actual amount paid
+    public DateTime? PaymentConfirmedAt { get; set; }   // Payment confirmation timestamp
+    // Navigation (optional to include in API responses)
     public Car? Car { get; set; }
     public User? Renter { get; set; }
     public List<Payment> Payments { get; set; } = new();

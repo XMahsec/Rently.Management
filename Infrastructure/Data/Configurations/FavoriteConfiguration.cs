@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Rently.Management.Domain.Entities;
 
@@ -13,7 +13,7 @@ namespace Rently.Management.Infrastructure.Data.Configurations
             // Composite Key
             builder.HasKey(f => new { f.UserId, f.CarId });
 
-            // علاقات
+            // Relationships
             builder.HasOne(f => f.User)
                    .WithMany(u => u.Favorites)
                    .HasForeignKey(f => f.UserId)

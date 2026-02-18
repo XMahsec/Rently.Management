@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Rently.Management.Domain.Entities;
 
@@ -19,7 +19,7 @@ namespace Rently.Management.Infrastructure.Data.Configurations
             // Indexes
             builder.HasIndex(b => b.TransactionId).IsUnique();
 
-            // علاقات
+            // Relationships
             builder.HasOne(b => b.Car)
                    .WithMany(c => c.Bookings)
                    .HasForeignKey(b => b.CarId)
