@@ -23,7 +23,8 @@ namespace Rently.Management.WebApi.Controllers
             [FromQuery] string? search = null,
             [FromQuery] string? status = null,
             [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 10)
+            [FromQuery] int pageSize = 10,
+            [FromQuery] bool includeContact = false)
         {
             var result = await _userRepository.GetUsersAsync(search, status, page, pageSize);
 
@@ -31,7 +32,7 @@ namespace Rently.Management.WebApi.Controllers
             {
                 Id = u.Id,
                 Name = u.Name ?? "",
-                Email = u.Email ?? "",
+                Email = includeContact ? (u.Email ?? "") : "",
                 Status = GetStatusFromApprovalStatus(u.ApprovalStatus)
             }).ToList();
 
@@ -46,7 +47,7 @@ namespace Rently.Management.WebApi.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<UserDto>> GetUser(int id)
+        public async Task<ActionResult<UserDto>> GetUser(int id, [FromQuery] bool includeContact = false)
         {
             var user = await _userRepository.GetByIdAsync(id);
 
@@ -59,7 +60,7 @@ namespace Rently.Management.WebApi.Controllers
             {
                 Id = user.Id,
                 Name = user.Name ?? "",
-                Email = user.Email ?? "",
+                Email = includeContact ? (user.Email ?? "") : "",
                 Status = GetStatusFromApprovalStatus(user.ApprovalStatus)
             });
         }

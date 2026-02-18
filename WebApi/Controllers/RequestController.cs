@@ -58,7 +58,8 @@ namespace Rently.Management.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<RequestDetailsDto>> GetRequestDetails(
             int id,
-            [FromQuery] string type)
+            [FromQuery] string type,
+            [FromQuery] bool includeDocs = false)
         {
             if (string.Equals(type, "Owner verification", StringComparison.OrdinalIgnoreCase))
             {
@@ -74,11 +75,11 @@ namespace Rently.Management.WebApi.Controllers
                     PhoneNumber = user.Phone ?? "",
                     SubmittedOn = user.CreatedAt,
                     Status = user.ApprovalStatus ?? "Pending",
-                    DrivingLicenseNumber = user.LicenseNumber,
-                    IdNumber = user.ZipCode, // Can be adjusted if a dedicated ID field is added
-                    IdImageUrl = user.IdImage,
-                    LicenseImageUrl = user.LicenseImage,
-                    SelfieImageUrl = user.SelfieImage
+                    DrivingLicenseNumber = includeDocs ? user.LicenseNumber : null,
+                    IdNumber = includeDocs ? user.ZipCode : null,
+                    IdImageUrl = includeDocs ? user.IdImage : null,
+                    LicenseImageUrl = includeDocs ? user.LicenseImage : null,
+                    SelfieImageUrl = includeDocs ? user.SelfieImage : null
                 };
 
                 return Ok(dto);
@@ -98,11 +99,11 @@ namespace Rently.Management.WebApi.Controllers
                     PhoneNumber = car.Owner?.Phone ?? "",
                     SubmittedOn = car.CreatedAt,
                     Status = car.Status ?? "Pending",
-                    DrivingLicenseNumber = car.Owner?.LicenseNumber,
-                    IdNumber = car.LicensePlate,
-                    IdImageUrl = car.Owner?.IdImage,
-                    LicenseImageUrl = car.CarLicenseImage,
-                    SelfieImageUrl = car.Owner?.SelfieImage
+                    DrivingLicenseNumber = includeDocs ? car.Owner?.LicenseNumber : null,
+                    IdNumber = includeDocs ? car.LicensePlate : null,
+                    IdImageUrl = includeDocs ? car.Owner?.IdImage : null,
+                    LicenseImageUrl = includeDocs ? car.CarLicenseImage : null,
+                    SelfieImageUrl = includeDocs ? car.Owner?.SelfieImage : null
                 };
 
                 return Ok(dto);

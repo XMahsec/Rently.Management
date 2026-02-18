@@ -39,7 +39,8 @@ namespace Rently.Management.WebApi.Controllers
             [FromQuery] string? search = null,
             [FromQuery] string? status = null,
             [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 10)
+            [FromQuery] int pageSize = 10,
+            [FromQuery] bool includePlate = false)
         {
             var result = await _carRepository.GetCarsAsync(search, status, page, pageSize);
 
@@ -47,7 +48,7 @@ namespace Rently.Management.WebApi.Controllers
             {
                 Id = c.Id,
                 CarName = $"{c.Brand} {c.Model} {c.Year}",
-                PlateNumber = c.LicensePlate ?? "",
+                PlateNumber = includePlate ? (c.LicensePlate ?? "") : "",
                 OwnerName = c.Owner?.Name ?? "",
                 PricePerDay = c.PricePerDay,
                 Status = c.Status ?? "Pending",
@@ -68,7 +69,7 @@ namespace Rently.Management.WebApi.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<CarDto>> GetCar(int id)
+        public async Task<ActionResult<CarDto>> GetCar(int id, [FromQuery] bool includePlate = false)
         {
             var car = await _carRepository.GetByIdAsync(id);
 
@@ -81,7 +82,7 @@ namespace Rently.Management.WebApi.Controllers
             {
                 Id = car.Id,
                 CarName = $"{car.Brand} {car.Model} {car.Year}",
-                PlateNumber = car.LicensePlate ?? "",
+                PlateNumber = includePlate ? (car.LicensePlate ?? "") : "",
                 OwnerName = car.Owner?.Name ?? "",
                 PricePerDay = car.PricePerDay,
                 Status = car.Status ?? "Pending",

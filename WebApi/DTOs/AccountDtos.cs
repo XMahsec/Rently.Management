@@ -15,7 +15,8 @@ namespace Rently.Management.WebApi.DTOs
         [MinLength(6)]
         public string CurrentPassword { get; set; } = "";
         [Required]
-        [MinLength(6)]
+        [MinLength(12)]
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{12,}$")]
         public string NewPassword { get; set; } = "";
     }
 
@@ -34,7 +35,8 @@ namespace Rently.Management.WebApi.DTOs
         [Required]
         public string Token { get; set; } = "";
         [Required]
-        [MinLength(6)]
+        [MinLength(12)]
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{12,}$")]
         public string NewPassword { get; set; } = "";
     }
 
@@ -51,7 +53,8 @@ namespace Rently.Management.WebApi.DTOs
         [StringLength(30)]
         public string Phone { get; set; } = "";
         [Required]
-        [MinLength(6)]
+        [MinLength(12)]
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{12,}$")]
         public string Password { get; set; } = "";
     }
 }

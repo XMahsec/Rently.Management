@@ -68,7 +68,7 @@ namespace Rently.Management.WebApi.Controllers
         /// <summary>
         /// Request password reset: create a temporary token valid for 30 minutes.
         /// </summary>
-        public async Task<IActionResult> RequestReset([FromBody] RequestResetDto dto)
+        public async Task<IActionResult> RequestReset([FromBody] RequestResetDto dto, [FromQuery] bool debug = false)
         {
             var email = dto.Email.Trim().ToLowerInvariant();
             var user = _context.Users.FirstOrDefault(u => (u.Email ?? "").ToLower() == email);
@@ -79,6 +79,14 @@ namespace Rently.Management.WebApi.Controllers
             user.UpdatedAt = DateTime.UtcNow;
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
+            if (debug)
+            {
+                var env = HttpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
+                if (string.Equals(env.EnvironmentName, "Development", StringComparison.OrdinalIgnoreCase))
+                {
+                    return Ok(new { message = "Reset requested", dev_token = token });
+                }
+            }
             return Ok(new { message = "Reset requested" });
         }
 
@@ -114,6 +122,13 @@ namespace Rently.Management.WebApi.Controllers
         {
             var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
             if (!string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase)) return Forbid();
+            // Only Super Admin (configured Admin:Email) can add another admin
+            var actorEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? "";
+            var superAdminEmail = (_context.Database != null) // just to avoid nullables; config below
+                ? HttpContext.RequestServices.GetRequiredService<IConfiguration>()["Admin:Email"] ?? ""
+                : "";
+            if (!actorEmail.Equals(superAdminEmail, StringComparison.OrdinalIgnoreCase))
+                return Forbid();
             var email = dto.Email.Trim().ToLowerInvariant();
             var exists = _context.Users.Any(u => (u.Email ?? "").ToLower() == email);
             if (exists) return Conflict();

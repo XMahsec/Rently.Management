@@ -19,6 +19,13 @@ public class UserRepository : IUserRepository
         return await _context.Users.FindAsync(id);
     }
 
+    public async Task<User?> GetByEmailAsync(string email)
+    {
+        var e = (email ?? "").Trim().ToLowerInvariant();
+        return await _context.Users
+            .FirstOrDefaultAsync(u => (u.Email ?? "").ToLower() == e);
+    }
+
     public async Task<PagedResult<User>> GetUsersAsync(string? search, string? status, int page, int pageSize)
     {
         var query = _context.Users.AsQueryable();

@@ -39,8 +39,7 @@ namespace Rently.Management.WebApi.Controllers
             if (string.IsNullOrWhiteSpace(dto.Email))
                 return BadRequest();
 
-            var usersPaged = await _userRepository.GetUsersAsync(dto.Email, "All", 1, 1);
-            var user = usersPaged.Data.FirstOrDefault(u => (u.Email ?? "").Equals(dto.Email, StringComparison.OrdinalIgnoreCase));
+            var user = await _userRepository.GetByEmailAsync(dto.Email);
             if (user == null)
                 return Unauthorized();
 

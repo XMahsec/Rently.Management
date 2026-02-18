@@ -5,6 +5,7 @@ namespace Rently.Management.Domain.Repositories;
 public interface IUserRepository
 {
     Task<User?> GetByIdAsync(int id);
+    Task<User?> GetByEmailAsync(string email);
     Task<PagedResult<User>> GetUsersAsync(string? search, string? status, int page, int pageSize);
     Task<PagedResult<User>> GetActivationRequestsAsync(int page, int pageSize);
     Task<User> CreateAsync(User user);
