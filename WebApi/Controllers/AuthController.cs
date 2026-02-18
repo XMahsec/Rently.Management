@@ -5,6 +5,7 @@ using Rently.Management.WebApi.DTOs;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Rently.Management.WebApi.Services;
 
 namespace Rently.Management.WebApi.Controllers
 {
@@ -17,17 +18,20 @@ namespace Rently.Management.WebApi.Controllers
         /// </summary>
         private readonly IUserRepository _userRepository;
         private readonly IConfiguration _configuration;
+        private readonly PasswordService _passwordService;
 
-        public AuthController(IUserRepository userRepository, IConfiguration configuration)
+        public AuthController(IUserRepository userRepository, IConfiguration configuration, PasswordService passwordService)
         {
             _userRepository = userRepository;
             _configuration = configuration;
+            _passwordService = passwordService;
         }
 
         [HttpPost("login")]
         [Microsoft.AspNetCore.Authorization.AllowAnonymous]
         /// <summary>
         /// Admin development login using settings (Admin:Email/Admin:Password) and issues a JWT.
+        /// Also supports DB-based Admin login using stored password hash/salt.
         /// Returns claims (Name/Email/Role/UserId) inside the token.
         /// </summary>
         public async Task<ActionResult<LoginResponseDto>> Login([FromBody] LoginRequestDto dto)
@@ -44,7 +48,17 @@ namespace Rently.Management.WebApi.Controllers
             var adminPassword = _configuration["Admin:Password"] ?? "";
             var providedPassword = dto.Password ?? "";
 
-            if (!user.Email!.Equals(adminEmail, StringComparison.OrdinalIgnoreCase) || providedPassword != adminPassword)
+            var isAdminRole = string.Equals(user.Role, "Admin", StringComparison.OrdinalIgnoreCase);
+            if (!isAdminRole) return Unauthorized();
+
+            var devLoginOK = user.Email!.Equals(adminEmail, StringComparison.OrdinalIgnoreCase) && providedPassword == adminPassword;
+            var dbLoginOK = false;
+            if (!string.IsNullOrEmpty(user.PasswordHash) && !string.IsNullOrEmpty(user.PasswordSalt))
+            {
+                dbLoginOK = _passwordService.Verify(providedPassword, user.PasswordHash!, user.PasswordSalt!);
+            }
+
+            if (!(devLoginOK || dbLoginOK))
                 return Unauthorized();
 
             var issuer = _configuration["Jwt:Issuer"] ?? "";
