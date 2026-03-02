@@ -21,12 +21,14 @@ namespace Rently.Management.WebApi.Controllers
         private readonly IPaymentRepository _paymentRepository;
         private readonly PaymobService _paymobService;
         private readonly IConfiguration _configuration;
+        private readonly WebhookService _webhookService;
 
-        public PaymentController(IPaymentRepository paymentRepository, PaymobService paymobService, IConfiguration configuration)
+        public PaymentController(IPaymentRepository paymentRepository, PaymobService paymobService, IConfiguration configuration, WebhookService webhookService)
         {
             _paymentRepository = paymentRepository;
             _paymobService = paymobService;
             _configuration = configuration;
+            _webhookService = webhookService;
         }
 
         [HttpGet("statistics")]
@@ -73,6 +75,7 @@ namespace Rently.Management.WebApi.Controllers
                 ProviderReceiptUrl = url
             };
             var created = await _paymentRepository.CreateAsync(payment);
+            _ = _webhookService.PublishAsync("payment.created", new { payment_id = created.Id, booking_id = created.BookingId, user_id = created.UserId, amount = created.Amount, currency = created.Currency, status = created.Status, provider = created.Provider, provider_payment_id = created.ProviderPaymentId });
             return Ok(new { payment_id = created.Id, order_id = orderId, payment_token = paymentToken, url, method });
         }
 
@@ -111,6 +114,7 @@ namespace Rently.Management.WebApi.Controllers
                 ProviderReceiptUrl = url
             };
             await _paymentRepository.CreateAsync(payment);
+            _ = _webhookService.PublishAsync("payment.created", new { payment_id = payment.Id, booking_id = payment.BookingId, user_id = payment.UserId, amount = payment.Amount, currency = payment.Currency, status = payment.Status, provider = payment.Provider, provider_payment_id = payment.ProviderPaymentId });
 
             if (useIframe)
             {
@@ -155,6 +159,7 @@ namespace Rently.Management.WebApi.Controllers
                 payment.Status = success ? "Succeeded" : "Failed";
                 await _paymentRepository.UpdateAsync(payment);
                 await NotifyPartnerAsync(payment);
+                _ = _webhookService.PublishAsync("payment.updated", new { payment_id = payment.Id, booking_id = payment.BookingId, status = payment.Status, amount = payment.Amount, currency = payment.Currency, provider_payment_id = payment.ProviderPaymentId });
             }
             return Ok();
         }
@@ -216,6 +221,7 @@ namespace Rently.Management.WebApi.Controllers
                 payment.ProviderPaymentId = fields.TryGetValue("id", out var pid) ? pid : payment.ProviderPaymentId;
                 await _paymentRepository.UpdateAsync(payment);
                 await NotifyPartnerAsync(payment);
+                _ = _webhookService.PublishAsync("payment.updated", new { payment_id = payment.Id, booking_id = payment.BookingId, status = payment.Status, amount = payment.Amount, currency = payment.Currency, provider_payment_id = payment.ProviderPaymentId });
             }
             return Ok();
         }
@@ -373,6 +379,7 @@ namespace Rently.Management.WebApi.Controllers
             };
 
             var createdPayment = await _paymentRepository.CreateAsync(payment);
+            _ = _webhookService.PublishAsync("payment.created", new { payment_id = createdPayment.Id, booking_id = createdPayment.BookingId, user_id = createdPayment.UserId, amount = createdPayment.Amount, currency = createdPayment.Currency, status = createdPayment.Status, provider = createdPayment.Provider, provider_payment_id = createdPayment.ProviderPaymentId });
             var paymentWithDetails = await _paymentRepository.GetByIdAsync(createdPayment.Id);
 
             return CreatedAtAction(nameof(GetPayment), new { id = createdPayment.Id }, new PaymentDto
@@ -412,6 +419,7 @@ namespace Rently.Management.WebApi.Controllers
                 payment.FailureMessage = dto.FailureMessage;
 
             await _paymentRepository.UpdateAsync(payment);
+            _ = _webhookService.PublishAsync("payment.updated", new { payment_id = payment.Id, status = payment.Status, provider_payment_id = payment.ProviderPaymentId, provider_receipt_url = payment.ProviderReceiptUrl, failure_code = payment.FailureCode, failure_message = payment.FailureMessage });
 
             return NoContent();
         }
@@ -451,6 +459,7 @@ namespace Rently.Management.WebApi.Controllers
             // Update original payment status
             payment.Status = "Refunding";
             await _paymentRepository.UpdateAsync(payment);
+            _ = _webhookService.PublishAsync("payment.refund_requested", new { payment_id = payment.Id, refund_amount = dto.Amount, status = payment.Status });
 
             return Ok(new { message = "Refund request created successfully", refundId = refund.Id });
         }
@@ -465,6 +474,7 @@ namespace Rently.Management.WebApi.Controllers
                 {
                     payment.Status = "Refunding";
                     await _paymentRepository.UpdateAsync(payment);
+                    _ = _webhookService.PublishAsync("payment.refund_requested", new { payment_id = payment.Id, status = payment.Status });
                 }
             }
 

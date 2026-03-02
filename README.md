@@ -77,6 +77,22 @@ Backend for the “Management” part of the mobile app (Flutter). It provides J
     - Behavior:
       - `card`: returns HTML page that embeds Paymob iframe (direct render)
       - `wallet`: redirects to Paymob hosted payment page
+- Initialization (API style):
+  - `POST /api/payment/paymob/init` (JWT)
+    - Body (snake_case):
+      ```
+      {
+        "booking_id": 1,
+        "user_id": 6,
+        "amount": 100.00,
+        "currency": "EGP",
+        "email": "user@example.com",
+        "name": "Test User",
+        "phone": "01000000000",
+        "method": "card"
+      }
+      ```
+    - Returns: `{ payment_id, order_id, payment_token, url, method }`
 - Callback:
   - `GET /api/payment/paymob/callback` (AllowAnonymous)
     - Validates HMAC, updates `Payment` status, notifies partner via webhook
@@ -87,6 +103,36 @@ Backend for the “Management” part of the mobile app (Flutter). It provides J
   - `GET /api/payment/test/iframe?url=...` (AllowAnonymous): simple test page to render any iframe URL
 - Notes:
   - Use ngrok (or similar) to expose local callback/webhook URLs for Paymob during development
+
+### Outgoing Partner Webhooks
+- Service: `WebhookService` posts signed events to an external listener (e.g., Flask)
+- Config keys (Development via User Secrets preferred):
+  - `Webhooks:Flask:Url` → e.g., `http://localhost:8000/webhook/rently`
+  - `Webhooks:Flask:Secret` → HMAC secret for signing payload
+  - `Webhooks:Flask:Enabled` → `true|false`
+- HTTP headers:
+  - `X-Rently-Event`: event name (e.g., `payment.created`, `payment.updated`, `user.created`, `car.updated`)
+  - `X-Rently-Signature`: `HMACSHA256(body, Webhooks:Flask:Secret)` as lowercase hex
+- Payload envelope (snake_case):
+  ```
+  {
+    "id": "<event-id>",
+    "event": "payment.updated",
+    "created_at": "2026-03-01T12:34:56Z",
+    "data": {
+      "payment_id": 123,
+      "booking_id": 1,
+      "status": "Succeeded",
+      "amount": 100.00,
+      "currency": "EGP",
+      "provider_payment_id": "...."
+    }
+  }
+  ```
+- Emitted events:
+  - Payments: `payment.created`, `payment.updated`, `payment.refund_requested`
+  - Users: `user.created`, `user.updated`, `user.password_changed`
+  - Cars: `car.created`, `car.updated`, `car.status_changed`
 
 ## API Reference
 

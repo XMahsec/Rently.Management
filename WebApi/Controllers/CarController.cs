@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Rently.Management.Domain.Entities;
 using Rently.Management.Domain.Repositories;
 using Rently.Management.WebApi.DTOs;
+using Rently.Management.WebApi.Services;
 
 namespace Rently.Management.WebApi.Controllers
 {
@@ -10,10 +11,12 @@ namespace Rently.Management.WebApi.Controllers
     public class CarController : ControllerBase
     {
         private readonly ICarRepository _carRepository;
+        private readonly WebhookService _webhookService;
 
-        public CarController(ICarRepository carRepository)
+        public CarController(ICarRepository carRepository, WebhookService webhookService)
         {
             _carRepository = carRepository;
+            _webhookService = webhookService;
         }
 
         [HttpGet("statistics")]
@@ -117,6 +120,7 @@ namespace Rently.Management.WebApi.Controllers
             
             // Reload with includes
             var carWithDetails = await _carRepository.GetByIdAsync(createdCar.Id);
+            _ = _webhookService.PublishAsync("car.created", new { car_id = createdCar.Id, owner_id = createdCar.OwnerId, brand = createdCar.Brand, model = createdCar.Model, year = createdCar.Year, status = createdCar.Status, price_per_day = createdCar.PricePerDay });
 
             return CreatedAtAction(nameof(GetCar), new { id = createdCar.Id }, new CarDto
             {
@@ -167,6 +171,7 @@ namespace Rently.Management.WebApi.Controllers
                 car.LicensePlate = dto.LicensePlate;
 
             await _carRepository.UpdateAsync(car);
+            _ = _webhookService.PublishAsync("car.updated", new { car_id = car.Id, owner_id = car.OwnerId, brand = car.Brand, model = car.Model, year = car.Year, status = car.Status, price_per_day = car.PricePerDay });
 
             return NoContent();
         }
@@ -196,6 +201,7 @@ namespace Rently.Management.WebApi.Controllers
 
             car.Status = dto.Status;
             await _carRepository.UpdateAsync(car);
+            _ = _webhookService.PublishAsync("car.status_changed", new { car_id = car.Id, status = car.Status });
 
             return NoContent();
         }

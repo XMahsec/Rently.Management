@@ -8,7 +8,7 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:5000",
+      "value": "http://localhost:5101",
       "type": "string"
     },
     {
@@ -42,7 +42,7 @@
             "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"<your-admin-email>\",\n  \"password\": \"<your-password>\"\n}",
+              "raw": "{\n  \"email\": \"sheha@rently.com\",\n  \"password\": \"Sheha212**#\"\n}",
               "options": { "raw": { "language": "json" } }
             }
           },
@@ -54,8 +54,8 @@
                 "exec": [
                   "let json = {};",
                   "try { json = pm.response.json(); } catch(e) {}",
-                  "if (json && json.Token) {",
-                  "  pm.collectionVariables.set('token', json.Token);",
+                  "if (json && json.token) {",
+                  "  pm.collectionVariables.set('token', json.token);",
                   "  pm.test('Token captured', function () {",
                   "    pm.expect(pm.collectionVariables.get('token')).to.exist;",
                   "  });",
@@ -89,7 +89,7 @@
             "method": "POST",
             "header": [ { "key": "Content-Type", "value": "application/json" } ],
             "url": { "raw": "{{baseUrl}}/api/account/change-password", "host": ["{{baseUrl}}"], "path": ["api","account","change-password"] },
-            "body": { "mode": "raw", "raw": "{\n  \"currentPassword\": \"<current>\",\n  \"newPassword\": \"<new>\"\n}", "options": { "raw": { "language": "json" } } }
+            "body": { "mode": "raw", "raw": "{\n  \"current_password\": \"Admin#Start2026!\",\n  \"new_password\": \"Admin#Next2027?X\"\n}", "options": { "raw": { "language": "json" } } }
           }
         },
         {
@@ -109,7 +109,7 @@
             "method": "POST",
             "header": [ { "key": "Content-Type", "value": "application/json" } ],
             "url": { "raw": "{{baseUrl}}/api/account/reset-password", "host": ["{{baseUrl}}"], "path": ["api","account","reset-password"] },
-            "body": { "mode": "raw", "raw": "{\n  \"email\": \"user@example.com\",\n  \"token\": \"<reset-token>\",\n  \"newPassword\": \"<new>\"\n}", "options": { "raw": { "language": "json" } } }
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"user@example.com\",\n  \"token\": \"<reset-token>\",\n  \"new_password\": \"Admin#New2026!\"\n}", "options": { "raw": { "language": "json" } } }
           }
         },
         {
@@ -118,7 +118,7 @@
             "method": "POST",
             "header": [ { "key": "Content-Type", "value": "application/json" } ],
             "url": { "raw": "{{baseUrl}}/api/account/add-admin", "host": ["{{baseUrl}}"], "path": ["api","account","add-admin"] },
-            "body": { "mode": "raw", "raw": "{\n  \"name\": \"New Admin\",\n  \"email\": \"admin2@example.com\",\n  \"phone\": \"01000000000\",\n  \"password\": \"<strong-password>\"\n}", "options": { "raw": { "language": "json" } } }
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"New Admin\",\n  \"email\": \"admin2@example.com\",\n  \"phone\": \"01000000000\",\n  \"password\": \"Stronger#2026!X\"\n}", "options": { "raw": { "language": "json" } } }
           }
         }
       ]
@@ -310,7 +310,7 @@
             "method": "POST",
             "header": [ { "key": "Content-Type", "value": "application/json" } ],
             "url": { "raw": "{{baseUrl}}/api/payment/paymob/init", "host": ["{{baseUrl}}"], "path": ["api","payment","paymob","init"] },
-            "body": { "mode": "raw", "raw": "{\n  \"bookingId\": 1,\n  \"userId\": 1,\n  \"amount\": 100.00,\n  \"currency\": \"EGP\",\n  \"email\": \"user@example.com\",\n  \"name\": \"User Name\",\n  \"phone\": \"01000000000\",\n  \"method\": \"card\"\n}", "options": { "raw": { "language": "json" } } }
+            "body": { "mode": "raw", "raw": "{\n  \"booking_id\": 1,\n  \"user_id\": 1,\n  \"amount\": 100.00,\n  \"currency\": \"EGP\",\n  \"email\": \"user@example.com\",\n  \"name\": \"User Name\",\n  \"phone\": \"01000000000\",\n  \"method\": \"card\"\n}", "options": { "raw": { "language": "json" } } }
           }
         },
         {

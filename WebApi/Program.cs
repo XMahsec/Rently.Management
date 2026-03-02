@@ -16,6 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration
     .AddJsonFile(Path.Combine("WebApi", "appsettings.json"), optional: false, reloadOnChange: true)
     .AddJsonFile(Path.Combine("WebApi", $"appsettings.{builder.Environment.EnvironmentName}.json"), optional: true, reloadOnChange: true)
+    .AddUserSecrets<Program>(optional: true)
     .AddEnvironmentVariables();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -26,10 +27,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddHttpClient("paymob", client =>
 {
     var baseUrl = builder.Configuration["Paymob:BaseUrl"] ?? "https://accept.paymob.com/api";
+    if (!baseUrl.EndsWith("/")) baseUrl += "/";
     client.BaseAddress = new Uri(baseUrl);
 });
 builder.Services.AddSingleton<PaymobService>();
 builder.Services.AddSingleton<PasswordService>();
+builder.Services.AddSingleton<WebhookService>();
 
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "";
@@ -119,8 +122,7 @@ builder.Services.AddCors(options =>
               .AllowCredentials();
     });
 });
-var cs = builder.Configuration.GetConnectionString("DefaultConnection");
-Console.WriteLine($"CS = {cs}");
+// Connection string logging removed for security
 
 var app = builder.Build();
 

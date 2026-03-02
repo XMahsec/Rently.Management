@@ -20,10 +20,23 @@ namespace Rently.Management.WebApi.Services
         public async Task<string> AuthenticateAsync()
         {
             var apiKey = _configuration["Paymob:ApiKey"] ?? "";
+            if (string.IsNullOrWhiteSpace(apiKey) || apiKey.StartsWith("__USE_USER_SECRETS__"))
+                throw new InvalidOperationException("Paymob ApiKey is not configured");
             var client = _httpClientFactory.CreateClient("paymob");
-            var res = await client.PostAsJsonAsync("/auth/tokens", new { api_key = apiKey });
-            var auth = await res.Content.ReadFromJsonAsync<AuthRes>();
-            return auth?.token ?? "";
+            var authUrl = (client.BaseAddress?.ToString().TrimEnd('/') ?? "https://accept.paymob.com/api") + "/auth/tokens";
+            var res = await client.PostAsJsonAsync(authUrl, new { api_key = apiKey });
+            var body = await res.Content.ReadAsStringAsync();
+            if (!res.IsSuccessStatusCode)
+                throw new InvalidOperationException($"Paymob auth failed: {(int)res.StatusCode} {res.ReasonPhrase}. Url: {authUrl}. Body: {body}");
+            try
+            {
+                var auth = System.Text.Json.JsonSerializer.Deserialize<AuthRes>(body);
+                return auth?.token ?? "";
+            }
+            catch
+            {
+                throw new InvalidOperationException($"Invalid Paymob auth response: {body}");
+            }
         }
 
         public async Task<(string orderId, string paymentToken, string url)> InitiateAsync(int amountCents, string currency, string email, string name, string phone, string integrationId, bool useIframe)
@@ -39,7 +52,8 @@ namespace Rently.Management.WebApi.Services
                 currency = currency,
                 items = Array.Empty<object>()
             };
-            var orderRes = await client.PostAsJsonAsync("/ecommerce/orders", orderReq);
+            var orderUrl = (client.BaseAddress?.ToString().TrimEnd('/') ?? "https://accept.paymob.com/api") + "/ecommerce/orders";
+            var orderRes = await client.PostAsJsonAsync(orderUrl, orderReq);
             var order = await orderRes.Content.ReadFromJsonAsync<OrderRes>();
 
             var redirectionUrl = _configuration["Paymob:RedirectionUrl"] ?? "";
@@ -71,7 +85,8 @@ namespace Rently.Management.WebApi.Services
                 lock_order_when_paid = true,
                 redirection_url = redirectionUrl
             };
-            var keyRes = await client.PostAsJsonAsync("/acceptance/payment_keys", keyReq);
+            var keyUrl = (client.BaseAddress?.ToString().TrimEnd('/') ?? "https://accept.paymob.com/api") + "/acceptance/payment_keys";
+            var keyRes = await client.PostAsJsonAsync(keyUrl, keyReq);
             var key = await keyRes.Content.ReadFromJsonAsync<PaymentKeyRes>();
             var iframeId = _configuration["Paymob:IframeId"] ?? "";
             var baseUrl = _configuration["Paymob:BaseUrl"] ?? "";

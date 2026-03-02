@@ -15,11 +15,13 @@ namespace Rently.Management.WebApi.Controllers
         /// </summary>
         private readonly ApplicationDbContext _context;
         private readonly PasswordService _passwordService;
+        private readonly WebhookService _webhookService;
 
-        public AccountController(ApplicationDbContext context, PasswordService passwordService)
+        public AccountController(ApplicationDbContext context, PasswordService passwordService, WebhookService webhookService)
         {
             _context = context;
             _passwordService = passwordService;
+            _webhookService = webhookService;
         }
 
         [HttpPost("change-name")]
@@ -37,6 +39,7 @@ namespace Rently.Management.WebApi.Controllers
             user.UpdatedAt = DateTime.UtcNow;
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
+            _ = _webhookService.PublishAsync("user.updated", new { user_id = user.Id, name = user.Name, email = user.Email });
             return NoContent();
         }
 
@@ -60,6 +63,7 @@ namespace Rently.Management.WebApi.Controllers
             user.UpdatedAt = DateTime.UtcNow;
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
+            _ = _webhookService.PublishAsync("user.password_changed", new { user_id = user.Id, email = user.Email });
             return NoContent();
         }
 
@@ -146,6 +150,7 @@ namespace Rently.Management.WebApi.Controllers
             };
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
+            _ = _webhookService.PublishAsync("user.created", new { user_id = user.Id, name = user.Name, email = user.Email, role = user.Role });
             return CreatedAtAction(nameof(AddAdmin), new { id = user.Id }, new { id = user.Id });
         }
     }

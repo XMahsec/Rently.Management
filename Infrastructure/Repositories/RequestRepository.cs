@@ -31,22 +31,31 @@ public class RequestRepository : IRequestRepository
                 SubmittedBy = u.Name ?? "",
                 SubmittedOn = u.CreatedAt,
                 TotalPrice = 0,
-                Status = MapApprovalStatusToStatus(u.ApprovalStatus)
+                Status =
+                    u.ApprovalStatus == "Approved"
+                        ? "Approved"
+                        : (u.ApprovalStatus == "Rejected"
+                            ? "Rejected"
+                            : "Pending")
             });
 
         var carListingQuery = _context.Cars
-            .Include(c => c.Owner)
             .Select(c => new RequestItem
             {
                 Id = c.Id,
                 Type = "Car listing",
-                SubmittedBy = c.Owner!.Name ?? "",
+                SubmittedBy = (c.Owner != null ? (c.Owner.Name ?? "") : ""),
                 SubmittedOn = c.CreatedAt,
                 TotalPrice = c.PricePerDay,
-                Status = MapCarStatusToStatus(c.Status)
+                Status =
+                    c.Status == "Available"
+                        ? "Approved"
+                        : (c.Status == "Rejected"
+                            ? "Rejected"
+                            : "Pending")
             });
 
-        var combined = ownerRequestsQuery.Concat(carListingQuery).AsQueryable();
+        var combined = ownerRequestsQuery.Concat(carListingQuery);
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -131,26 +140,6 @@ public class RequestRepository : IRequestRepository
         return false;
     }
 
-    private static string MapApprovalStatusToStatus(string? approvalStatus)
-    {
-        return approvalStatus switch
-        {
-            "Approved" => "Approved",
-            "Rejected" => "Rejected",
-            "Pending" => "Pending",
-            _ => "Pending"
-        };
-    }
-
-    private static string MapCarStatusToStatus(string? carStatus)
-    {
-        return carStatus switch
-        {
-            "Pending" => "Pending",
-            "Available" => "Approved",
-            "Rejected" => "Rejected",
-            _ => "Pending"
-        };
-    }
+    // NOTE: mapping methods removed to keep the entire query server-translatable
 }
 
