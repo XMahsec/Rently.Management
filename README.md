@@ -136,7 +136,7 @@ The infrastructure is ready for Google SMTP. Ensure these settings are in your `
 - `GET /statistics` [JWT]
   - **Success**: `200 OK` (Revenue and profit stats)
 - `POST /paymob/init` [JWT]
-  - **Success**: `200 OK` (Returns `payment_token` and URL)
+  - **Success**: `200 OK` (Returns `{ payment_id, order_id, payment_token, url, method }`)
   - **Errors**: `400 Bad Request` (Invalid Booking/User ID)
 - `GET /paymob/checkout` [JWT]
   - **Success**: `200 OK` (Returns Iframe HTML or Redirect)
@@ -144,6 +144,7 @@ The infrastructure is ready for Google SMTP. Ensure these settings are in your `
   - **Success**: `200 OK` (Handles HMAC validation and status updates)
 - `POST /paymob/webhook` [Public]
   - **Success**: `200 OK` (Server-to-server payment notifications)
+- **Security**: All callbacks (`/callback`) and webhooks (`/webhook`) enforce HMAC validation to ensure requests originate from Paymob.
 
 ### 📊 Dashboard (`/api/dashboard`)
 - `GET /stats` [JWT]
@@ -208,11 +209,7 @@ The API includes a **Global Exception Middleware** that captures all unhandled e
    ```
 5. **Swagger**: Access documentation at `http://localhost:5000/swagger`
 
-## 💳 Payments (Paymob)
-- **Initialization (API style)**:
-  - `POST /api/payment/paymob/init` [JWT]
-  - Returns: `{ payment_id, order_id, payment_token, url, method }`
-- **Security**: All callbacks (`/callback`) and webhooks (`/webhook`) enforce HMAC validation to ensure requests originate from Paymob.
+---
 
 ## 🔗 Outgoing Partner Webhooks
 The system can notify external services (e.g., a Flask app) about critical events using the `WebhookService`.
