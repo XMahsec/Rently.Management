@@ -66,86 +66,118 @@ The infrastructure is ready for Google SMTP. Ensure these settings are in your `
 ## 📚 API Reference
 
 ### 🔐 Authentication (`/api/auth`)
-| Endpoint | Method | Auth | Success | Error Codes | Description |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| `/login` | `POST` | Public | `200 OK` | `401`, `400` | Admin/User login, returns JWT and user details. |
-
-> **Error Response Example:**
-> ```json
-> { "statusCode": 401, "message": "Invalid email or password", "details": null }
-> ```
+- `POST /login` [Public]
+  - **Success**: `200 OK` (Returns JWT token and user profile)
+  - **Errors**: `401 Unauthorized` (Invalid credentials), `400 Bad Request`
+  - **Description**: Authenticates admin/users and provides a bearer token.
 
 ### 👤 Account Management (`/api/account`)
-| Endpoint | Method | Auth | Success | Error Codes | Description |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| `/change-name` | `POST` | JWT | `204` | `401`, `404` | Update current user's display name. |
-| `/change-password` | `POST` | JWT | `204` | `401`, `400` | Update password after verifying the current one. |
-| `/request-reset` | `POST` | Public | `200` | `204` | Send 6-digit OTP to email for password recovery. |
-| `/reset-password` | `POST` | Public | `204` | `401`, `404` | Reset password using email, OTP, and new password. |
-| `/request-admin-otp` | `POST` | Admin | `200` | `403`, `409` | Send verification OTP to a new admin's email. |
-| `/add-admin` | `POST` | Admin | `201` | `403`, `400`, `409` | Create a new Admin account using the verified OTP. |
-
-> **Error Response Example (Invalid OTP):**
-> ```json
-> { "statusCode": 400, "message": "Invalid or expired OTP.", "details": null }
-> ```
+- `POST /change-name` [JWT]
+  - **Success**: `204 No Content`
+  - **Errors**: `401 Unauthorized`, `404 Not Found`
+  - **Description**: Updates the current user's display name.
+- `POST /change-password` [JWT]
+  - **Success**: `204 No Content`
+  - **Errors**: `401 Unauthorized`, `400 Bad Request`
+  - **Description**: Updates password after verifying the old one.
+- `POST /request-reset` [Public]
+  - **Success**: `200 OK`
+  - **Errors**: `204 No Content` (If email not found)
+  - **Description**: Generates and sends a 6-digit OTP to the user's email.
+- `POST /reset-password` [Public]
+  - **Success**: `204 No Content`
+  - **Errors**: `401 Unauthorized` (Invalid/Expired OTP), `404 Not Found`
+  - **Description**: Resets password using email, OTP, and new password.
+- `POST /request-admin-otp` [Admin]
+  - **Success**: `200 OK`
+  - **Errors**: `403 Forbidden`, `409 Conflict` (Email exists)
+  - **Description**: Sends verification OTP to a potential new admin's email.
+- `POST /add-admin` [Admin]
+  - **Success**: `201 Created`
+  - **Errors**: `403 Forbidden`, `400 Bad Request` (Invalid OTP), `409 Conflict`
+  - **Description**: Finalizes admin creation using verified OTP.
 
 ### 🚗 Car Management (`/api/car`)
-| Endpoint | Method | Auth | Success | Error Codes | Description |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| `/statistics` | `GET` | JWT | `200` | `401` | Get car counts (Available, On Trip, Pending, Offline). |
-| `/` | `GET` | JWT | `200` | `401` | List cars with paging, search, and status filters. |
-| `/{id}` | `GET` | JWT | `200` | `404`, `401` | Get detailed information for a specific car. |
-| `/` | `POST` | JWT | `201` | `400`, `401` | Create a new car listing (Status: Pending). |
-| `/{id}` | `PUT` | JWT | `204` | `404`, `401` | Update car details (Brand, Model, Price, etc.). |
-| `/{id}` | `DELETE` | JWT | `204` | `404`, `401` | Remove a car listing. |
-| `/{id}/status` | `PATCH` | JWT | `204` | `404`, `401` | Update car status (e.g., Approve/Reject listing). |
+- `GET /statistics` [JWT]
+  - **Success**: `200 OK` (Car status counts)
+- `GET /` [JWT]
+  - **Success**: `200 OK` (Paged list of cars)
+- `GET /{id}` [JWT]
+  - **Success**: `200 OK` (Detailed car info)
+  - **Errors**: `404 Not Found`
+- `POST /` [JWT]
+  - **Success**: `201 Created`
+  - **Errors**: `400 Bad Request` (Owner not found)
+- `PUT /{id}` [JWT]
+  - **Success**: `204 No Content`
+  - **Errors**: `404 Not Found`
+- `DELETE /{id}` [JWT]
+  - **Success**: `204 No Content`
+  - **Errors**: `404 Not Found`
+- `PATCH /{id}/status` [JWT]
+  - **Success**: `204 No Content`
+  - **Errors**: `404 Not Found`
 
 ### 📅 Booking Management (`/api/booking`)
-| Endpoint | Method | Auth | Success | Error Codes | Description |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| `/statistics` | `GET` | JWT | `200` | `401` | Get booking stats (Active, Pick-up today, Canceled). |
-| `/` | `GET` | JWT | `200` | `401` | List all bookings with paging, search, and status. |
-| `/{id}` | `GET` | JWT | `200` | `404`, `401` | Get details of a specific booking. |
-| `/{id}/status` | `PATCH` | JWT | `204` | `404`, `401` | Update booking status (e.g., Cancel, Complete). |
-| `/refund-all` | `POST` | JWT | `200` | `401` | Batch mark bookings for refund. |
+- `GET /statistics` [JWT]
+  - **Success**: `200 OK` (Active trips, pick-ups, etc.)
+- `GET /` [JWT]
+  - **Success**: `200 OK` (Paged bookings)
+- `GET /{id}` [JWT]
+  - **Success**: `200 OK` (Detailed booking info)
+  - **Errors**: `404 Not Found`
+- `PATCH /{id}/status` [JWT]
+  - **Success**: `204 No Content`
+  - **Errors**: `404 Not Found`
+- `POST /refund-all` [JWT]
+  - **Success**: `200 OK` (Count of refunded items)
 
 ### 💳 Payment & Paymob (`/api/payment`)
-| Endpoint | Method | Auth | Success | Error Codes | Description |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| `/statistics` | `GET` | JWT | `200` | `401` | Get revenue, profit, and pending payout stats. |
-| `/paymob/init` | `POST` | JWT | `200` | `400`, `401` | Initialize Paymob payment (Returns `payment_token`). |
-| `/paymob/checkout` | `GET` | JWT | `200` | `400`, `401` | Direct checkout (Returns Iframe HTML or Redirect). |
-| `/paymob/callback` | `GET` | Public | `200` | `400` | Paymob success/failure redirection handler. |
-| `/paymob/webhook` | `POST` | Public | `200` | `400` | Paymob server-to-server status notification. |
-
-> **Error Response Example (FK Missing):**
-> ```json
-> { "statusCode": 400, "message": "Booking with ID 999 does not exist.", "details": null }
-> ```
+- `GET /statistics` [JWT]
+  - **Success**: `200 OK` (Revenue and profit stats)
+- `POST /paymob/init` [JWT]
+  - **Success**: `200 OK` (Returns `payment_token` and URL)
+  - **Errors**: `400 Bad Request` (Invalid Booking/User ID)
+- `GET /paymob/checkout` [JWT]
+  - **Success**: `200 OK` (Returns Iframe HTML or Redirect)
+- `GET /paymob/callback` [Public]
+  - **Success**: `200 OK` (Handles HMAC validation and status updates)
+- `POST /paymob/webhook` [Public]
+  - **Success**: `200 OK` (Server-to-server payment notifications)
 
 ### 📊 Dashboard (`/api/dashboard`)
-| Endpoint | Method | Auth | Success | Error Codes | Description |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| `/stats` | `GET` | JWT | `200` | `401` | High-level totals for Users, Cars, Bookings, Profit. |
-| `/weekly-revenue` | `GET` | JWT | `200` | `401` | Daily revenue data for the last 7 days. |
-| `/bookings-by-month` | `GET` | JWT | `200` | `401` | Monthly booking counts for chart representation. |
+- `GET /stats` [JWT]
+  - **Success**: `200 OK` (General platform totals)
+- `GET /weekly-revenue` [JWT]
+  - **Success**: `200 OK` (7-day revenue trend)
+- `GET /bookings-by-month` [JWT]
+  - **Success**: `200 OK` (Monthly performance)
 
 ### 📝 Verification Requests (`/api/request`)
-| Endpoint | Method | Auth | Success | Error Codes | Description |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| `/` | `GET` | JWT | `200` | `401` | List pending requests (User verification, Car listing). |
-| `/{id}` | `GET` | JWT | `200` | `404`, `400`, `401` | Get details and documents for a specific request. |
-| `/{id}/status` | `PATCH` | JWT | `204` | `404`, `401` | Approve or Reject a verification request. |
+- `GET /` [JWT]
+  - **Success**: `200 OK` (Pending user/car requests)
+- `GET /{id}` [JWT]
+  - **Success**: `200 OK` (Details + verification documents)
+  - **Errors**: `404 Not Found`
+- `PATCH /{id}/status` [JWT]
+  - **Success**: `204 No Content`
+  - **Errors**: `404 Not Found`
 
 ### 👥 User Management (`/api/user`)
-| Endpoint | Method | Auth | Success | Error Codes | Description |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| `/` | `GET` | JWT | `200` | `401` | List all users with paging and search. |
-| `/{id}` | `GET` | JWT | `200` | `404`, `401` | Get profile details for a specific user. |
-| `/` | `POST` | JWT | `201` | `400`, `401` | Create a new user manually. |
-| `/{id}` | `PUT` | JWT | `204` | `404`, `401` | Update user information (Role, Approval Status, etc.). |
-| `/{id}` | `DELETE` | JWT | `204` | `404`, `401` | Delete a user account. |
+- `GET /` [JWT]
+  - **Success**: `200 OK` (Paged user list)
+- `GET /{id}` [JWT]
+  - **Success**: `200 OK` (User profile details)
+  - **Errors**: `404 Not Found`
+- `POST /` [JWT]
+  - **Success**: `201 Created`
+  - **Errors**: `400 Bad Request`
+- `PUT /{id}` [JWT]
+  - **Success**: `204 No Content`
+  - **Errors**: `404 Not Found`
+- `DELETE /{id}` [JWT]
+  - **Success**: `204 No Content`
+  - **Errors**: `404 Not Found`
 
 ---
 
@@ -176,148 +208,17 @@ The API includes a **Global Exception Middleware** that captures all unhandled e
    ```
 5. **Swagger**: Access documentation at `http://localhost:5000/swagger`
 
-## Payments (Paymob)
-- Checkout (card/wallet):
-  - `GET /api/payment/paymob/checkout`
-    - Query: `bookingId`, `userId`, `amount`, `currency=EGP`, `email`, `name`, `phone`, `method=card|wallet`
-    - Behavior:
-      - `card`: returns HTML page that embeds Paymob iframe (direct render)
-      - `wallet`: redirects to Paymob hosted payment page
-- Initialization (API style):
-  - `POST /api/payment/paymob/init` (JWT)
-    - Body (snake_case):
-      ```
-      {
-        "booking_id": 1,
-        "user_id": 6,
-        "amount": 100.00,
-        "currency": "EGP",
-        "email": "user@example.com",
-        "name": "Test User",
-        "phone": "01000000000",
-        "method": "card"
-      }
-      ```
-    - Returns: `{ payment_id, order_id, payment_token, url, method }`
-- Callback:
-  - `GET /api/payment/paymob/callback` (AllowAnonymous)
-    - Validates HMAC, updates `Payment` status, notifies partner via webhook
-- Webhook:
-  - `POST /api/payment/paymob/webhook` (AllowAnonymous)
-    - Validates HMAC, updates `Payment`, and sends a partner webhook (`PartnerWebhookUrl`)
-- Utility:
-  - `GET /api/payment/test/iframe?url=...` (AllowAnonymous): simple test page to render any iframe URL
-- Notes:
-  - Use ngrok (or similar) to expose local callback/webhook URLs for Paymob during development
+## 💳 Payments (Paymob)
+- **Initialization (API style)**:
+  - `POST /api/payment/paymob/init` [JWT]
+  - Returns: `{ payment_id, order_id, payment_token, url, method }`
+- **Security**: All callbacks (`/callback`) and webhooks (`/webhook`) enforce HMAC validation to ensure requests originate from Paymob.
 
-### Outgoing Partner Webhooks
-- Service: `WebhookService` posts signed events to an external listener (e.g., Flask)
-- Config keys (Development via User Secrets preferred):
-  - `Webhooks:Flask:Url` → e.g., `http://localhost:8000/webhook/rently`
-  - `Webhooks:Flask:Secret` → HMAC secret for signing payload
-  - `Webhooks:Flask:Enabled` → `true|false`
-- HTTP headers:
-  - `X-Rently-Event`: event name (e.g., `payment.created`, `payment.updated`, `user.created`, `car.updated`)
-  - `X-Rently-Signature`: `HMACSHA256(body, Webhooks:Flask:Secret)` as lowercase hex
-- Payload envelope (snake_case):
-  ```
-  {
-    "id": "<event-id>",
-    "event": "payment.updated",
-    "created_at": "2026-03-01T12:34:56Z",
-    "data": {
-      "payment_id": 123,
-      "booking_id": 1,
-      "status": "Succeeded",
-      "amount": 100.00,
-      "currency": "EGP",
-      "provider_payment_id": "...."
-    }
-  }
-  ```
-- Emitted events:
-  - Payments: `payment.created`, `payment.updated`, `payment.refund_requested`
-  - Users: `user.created`, `user.updated`, `user.password_changed`
-  - Cars: `car.created`, `car.updated`, `car.status_changed`
+## 🔗 Outgoing Partner Webhooks
+The system can notify external services (e.g., a Flask app) about critical events using the `WebhookService`.
+- **Supported Events**: `payment.created`, `payment.updated`, `user.created`, `car.updated`.
+- **Security**: Each request includes an `X-Rently-Signature` header (HMACSHA256) for verification.
 
-## API Reference
-
-### AuthController (`/api/auth`)
-- `POST /login` → Admin development login, returns JWT
-
-### AccountController (`/api/account`)
-- `POST /change-name` (JWT)
-- `POST /change-password` (JWT)
-- `POST /request-reset` → Sends OTP for password reset
-- `POST /reset-password` → Verifies OTP and sets new password
-- `POST /request-admin-otp` (JWT, Admin) → Sends OTP to the email of the new admin to be added
-- `POST /add-admin` (JWT, Admin) → Verifies OTP and adds the new admin user
-
-### DashboardController (`/api/dashboard`)
-- `GET /stats` → totals and trends for users, cars, bookings, profit
-
-### UserController (`/api/user`) [JWT]
-- `GET /` → list with paging and filters (`search`, `status`, `page`, `pageSize`)
-- `GET /{id}`
-- `POST /` → create user (dev/admin use)
-- `PUT /{id}` → update user (email cannot be changed)
-- `DELETE /{id}`
-- `PATCH /{id}/status` → update approval status via UI status mapping
-
-### CarController (`/api/car`)
-- `GET /statistics`
-- `GET /` → list with paging/filters
-- `GET /{id}`
-- `POST /` → create car
-- `PUT /{id}` → update car
-- `DELETE /{id}`
-- `PATCH /{id}/status` → update status
-
-### BookingController (`/api/booking`)
-- `GET /statistics`
-- `GET /` → list with paging/filters
-
-### RequestController (`/api/request`) [JWT]
-- `GET /` → list requests (`search`, `type`, `status`, `sort`, paging)
-- `GET /{id}?type=Owner%20verification|Car%20listing` → details merged from User/Car
-- `PATCH /{id}/status` → update request status
-
-### PaymentController (`/api/payment`)
-- `GET /statistics`
-- `GET /transactions` → list payments with filters (`search`, `type`, `status`, paging)
-- `GET /owner-payouts` → aggregated payouts per owner
-- `GET /{id}`
-- `POST /` → create payment
-- `PUT /{id}` → update payment (status, provider fields)
-- `POST /process-payout` → process an owner payout (stubbed, business-specific)
-- `POST /refund-all` → mark succeeded payments as refunding (batch)
-- Paymob integration:
-  - `GET /paymob/checkout` (card/html iframe or wallet/redirect)
-  - `GET /paymob/callback` (AllowAnonymous)
-  - `POST /paymob/webhook` (AllowAnonymous)
-  - `GET /test/iframe?url=...` (AllowAnonymous)
-
-## Error Handling
-- Global Exception Middleware: All unhandled exceptions are caught and returned as a structured JSON response.
-- Structured Responses (snake_case):
-  ```json
-  {
-    "status_code": 400,
-    "message": "Error message details",
-    "details": "Stack trace (only in Development)"
-  }
-  ```
-- Validation: DataAnnotations are used across DTOs to enforce required fields and formats.
-- Existence Checks: The API verifies that related records (e.g., `BookingId`, `UserId`, `OwnerId`) exist before performing operations, preventing Foreign Key constraint violations (500 errors converted to 400 Bad Request).
-
-## Security Notes
-- Do not commit production secrets/keys to appsettings; use environment variables or Secret Manager.
-- JWT keys must be strong and rotated periodically.
-- HMAC validation is enforced for Paymob callbacks/webhooks.
-
-## CORS
-- Default policy allows `http://localhost:5173` and `http://localhost:3000` with credentials; adjust as needed for your Flutter/web clients.
-
-## Contributing
+## 🤝 Contributing
 - Open issues and PRs on GitHub.
-- Keep endpoint contracts and validation consistent; update docs/ARCHITECTURE.md if workflows change.
+- Keep endpoint contracts and validation consistent; update `docs/ARCHITECTURE.md` if workflows change.
