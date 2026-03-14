@@ -63,74 +63,89 @@ The infrastructure is ready for Google SMTP. Ensure these settings are in your `
 
 ---
 
-## � API Reference
+## 📚 API Reference
 
-### � Authentication (`/api/auth`)
-| Endpoint | Method | Auth | Description |
-| :--- | :--- | :--- | :--- |
-| `/login` | `POST` | Public | Admin/User login, returns JWT and user details. |
+### 🔐 Authentication (`/api/auth`)
+| Endpoint | Method | Auth | Success | Error Codes | Description |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `/login` | `POST` | Public | `200 OK` | `401`, `400` | Admin/User login, returns JWT and user details. |
+
+> **Error Response Example:**
+> ```json
+> { "statusCode": 401, "message": "Invalid email or password", "details": null }
+> ```
 
 ### 👤 Account Management (`/api/account`)
-| Endpoint | Method | Auth | Description |
-| :--- | :--- | :--- | :--- |
-| `/change-name` | `POST` | JWT | Update current user's display name. |
-| `/change-password` | `POST` | JWT | Update password after verifying the current one. |
-| `/request-reset` | `POST` | Public | Send 6-digit OTP to email for password recovery. |
-| `/reset-password` | `POST` | Public | Reset password using email, OTP, and new password. |
-| `/request-admin-otp` | `POST` | Admin | Send verification OTP to a new admin's email. |
-| `/add-admin` | `POST` | Admin | Create a new Admin account using the verified OTP. |
+| Endpoint | Method | Auth | Success | Error Codes | Description |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `/change-name` | `POST` | JWT | `204` | `401`, `404` | Update current user's display name. |
+| `/change-password` | `POST` | JWT | `204` | `401`, `400` | Update password after verifying the current one. |
+| `/request-reset` | `POST` | Public | `200` | `204` | Send 6-digit OTP to email for password recovery. |
+| `/reset-password` | `POST` | Public | `204` | `401`, `404` | Reset password using email, OTP, and new password. |
+| `/request-admin-otp` | `POST` | Admin | `200` | `403`, `409` | Send verification OTP to a new admin's email. |
+| `/add-admin` | `POST` | Admin | `201` | `403`, `400`, `409` | Create a new Admin account using the verified OTP. |
 
-### � Car Management (`/api/car`)
-| Endpoint | Method | Auth | Description |
-| :--- | :--- | :--- | :--- |
-| `/statistics` | `GET` | JWT | Get car counts (Available, On Trip, Pending, Offline). |
-| `/` | `GET` | JWT | List cars with paging, search, and status filters. |
-| `/{id}` | `GET` | JWT | Get detailed information for a specific car. |
-| `/` | `POST` | JWT | Create a new car listing (Status: Pending). |
-| `/{id}` | `PUT` | JWT | Update car details (Brand, Model, Price, etc.). |
-| `/{id}` | `DELETE` | JWT | Remove a car listing. |
-| `/{id}/status` | `PATCH` | JWT | Update car status (e.g., Approve/Reject listing). |
+> **Error Response Example (Invalid OTP):**
+> ```json
+> { "statusCode": 400, "message": "Invalid or expired OTP.", "details": null }
+> ```
+
+### 🚗 Car Management (`/api/car`)
+| Endpoint | Method | Auth | Success | Error Codes | Description |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `/statistics` | `GET` | JWT | `200` | `401` | Get car counts (Available, On Trip, Pending, Offline). |
+| `/` | `GET` | JWT | `200` | `401` | List cars with paging, search, and status filters. |
+| `/{id}` | `GET` | JWT | `200` | `404`, `401` | Get detailed information for a specific car. |
+| `/` | `POST` | JWT | `201` | `400`, `401` | Create a new car listing (Status: Pending). |
+| `/{id}` | `PUT` | JWT | `204` | `404`, `401` | Update car details (Brand, Model, Price, etc.). |
+| `/{id}` | `DELETE` | JWT | `204` | `404`, `401` | Remove a car listing. |
+| `/{id}/status` | `PATCH` | JWT | `204` | `404`, `401` | Update car status (e.g., Approve/Reject listing). |
 
 ### 📅 Booking Management (`/api/booking`)
-| Endpoint | Method | Auth | Description |
-| :--- | :--- | :--- | :--- |
-| `/statistics` | `GET` | JWT | Get booking stats (Active, Pick-up today, Canceled). |
-| `/` | `GET` | JWT | List all bookings with paging, search, and status. |
-| `/{id}` | `GET` | JWT | Get details of a specific booking. |
-| `/{id}/status` | `PATCH` | JWT | Update booking status (e.g., Cancel, Complete). |
-| `/refund-all` | `POST` | JWT | Batch mark bookings for refund. |
+| Endpoint | Method | Auth | Success | Error Codes | Description |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `/statistics` | `GET` | JWT | `200` | `401` | Get booking stats (Active, Pick-up today, Canceled). |
+| `/` | `GET` | JWT | `200` | `401` | List all bookings with paging, search, and status. |
+| `/{id}` | `GET` | JWT | `200` | `404`, `401` | Get details of a specific booking. |
+| `/{id}/status` | `PATCH` | JWT | `204` | `404`, `401` | Update booking status (e.g., Cancel, Complete). |
+| `/refund-all` | `POST` | JWT | `200` | `401` | Batch mark bookings for refund. |
 
 ### 💳 Payment & Paymob (`/api/payment`)
-| Endpoint | Method | Auth | Description |
-| :--- | :--- | :--- | :--- |
-| `/statistics` | `GET` | JWT | Get revenue, profit, and pending payout stats. |
-| `/paymob/init` | `POST` | JWT | Initialize Paymob payment (Returns `payment_token`). |
-| `/paymob/checkout` | `GET` | JWT | Direct checkout (Returns Iframe HTML or Redirect). |
-| `/paymob/callback` | `GET` | Public | Paymob success/failure redirection handler. |
-| `/paymob/webhook` | `POST` | Public | Paymob server-to-server status notification. |
+| Endpoint | Method | Auth | Success | Error Codes | Description |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `/statistics` | `GET` | JWT | `200` | `401` | Get revenue, profit, and pending payout stats. |
+| `/paymob/init` | `POST` | JWT | `200` | `400`, `401` | Initialize Paymob payment (Returns `payment_token`). |
+| `/paymob/checkout` | `GET` | JWT | `200` | `400`, `401` | Direct checkout (Returns Iframe HTML or Redirect). |
+| `/paymob/callback` | `GET` | Public | `200` | `400` | Paymob success/failure redirection handler. |
+| `/paymob/webhook` | `POST` | Public | `200` | `400` | Paymob server-to-server status notification. |
+
+> **Error Response Example (FK Missing):**
+> ```json
+> { "statusCode": 400, "message": "Booking with ID 999 does not exist.", "details": null }
+> ```
 
 ### 📊 Dashboard (`/api/dashboard`)
-| Endpoint | Method | Auth | Description |
-| :--- | :--- | :--- | :--- |
-| `/stats` | `GET` | JWT | High-level totals for Users, Cars, Bookings, Profit. |
-| `/weekly-revenue` | `GET` | JWT | Daily revenue data for the last 7 days. |
-| `/bookings-by-month` | `GET` | JWT | Monthly booking counts for chart representation. |
+| Endpoint | Method | Auth | Success | Error Codes | Description |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `/stats` | `GET` | JWT | `200` | `401` | High-level totals for Users, Cars, Bookings, Profit. |
+| `/weekly-revenue` | `GET` | JWT | `200` | `401` | Daily revenue data for the last 7 days. |
+| `/bookings-by-month` | `GET` | JWT | `200` | `401` | Monthly booking counts for chart representation. |
 
 ### 📝 Verification Requests (`/api/request`)
-| Endpoint | Method | Auth | Description |
-| :--- | :--- | :--- | :--- |
-| `/` | `GET` | JWT | List pending requests (User verification, Car listing). |
-| `/{id}` | `GET` | JWT | Get details and documents for a specific request. |
-| `/{id}/status` | `PATCH` | JWT | Approve or Reject a verification request. |
+| Endpoint | Method | Auth | Success | Error Codes | Description |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `/` | `GET` | JWT | `200` | `401` | List pending requests (User verification, Car listing). |
+| `/{id}` | `GET` | JWT | `200` | `404`, `400`, `401` | Get details and documents for a specific request. |
+| `/{id}/status` | `PATCH` | JWT | `204` | `404`, `401` | Approve or Reject a verification request. |
 
 ### 👥 User Management (`/api/user`)
-| Endpoint | Method | Auth | Description |
-| :--- | :--- | :--- | :--- |
-| `/` | `GET` | JWT | List all users with paging and search. |
-| `/{id}` | `GET` | JWT | Get profile details for a specific user. |
-| `/` | `POST` | JWT | Create a new user manually. |
-| `/{id}` | `PUT` | JWT | Update user information (Role, Approval Status, etc.). |
-| `/{id}` | `DELETE` | JWT | Delete a user account. |
+| Endpoint | Method | Auth | Success | Error Codes | Description |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `/` | `GET` | JWT | `200` | `401` | List all users with paging and search. |
+| `/{id}` | `GET` | JWT | `200` | `404`, `401` | Get profile details for a specific user. |
+| `/` | `POST` | JWT | `201` | `400`, `401` | Create a new user manually. |
+| `/{id}` | `PUT` | JWT | `204` | `404`, `401` | Update user information (Role, Approval Status, etc.). |
+| `/{id}` | `DELETE` | JWT | `204` | `404`, `401` | Delete a user account. |
 
 ---
 
