@@ -261,81 +261,109 @@ classDiagram
 
 ### 1. Authentication & Security
 #### Login Workflow
-1. Client sends `POST /api/auth/login` (email, password).
-2. API validates admin email/password from configuration or verifies stored PBKDF2 hash for DB users.
-3. If valid, API issues a JWT (containing `sub`, `email`, `name`, `role`).
-4. Client uses this token in the `Authorization: Bearer <token>` header for subsequent requests.
+```mermaid
+graph TD
+    A[Client sends POST /api/auth/login] --> B{Verify Credentials}
+    B -- Valid --> C[Generate JWT Token]
+    B -- Invalid --> D[Return 401 Unauthorized]
+    C --> E[Return 200 OK + Token]
+```
 
 #### Password Reset (OTP Flow)
-1. User sends `POST /api/account/request-reset` (email).
-2. API generates a 6-digit OTP, stores it in `PasswordResetToken` (expires in 10m).
-3. API sends OTP via `EmailService`.
-4. User sends `POST /api/account/reset-password` (email, otp, newPassword).
-5. API verifies OTP, hashes the new password, and clears reset fields.
+```mermaid
+graph TD
+    A[POST /api/account/request-reset] --> B{User Exists?}
+    B -- Yes --> C[Generate 6-digit OTP]
+    C --> D[Send OTP via Google SMTP]
+    D --> E[Store OTP in DB with 10m Expiry]
+    E --> F[Return 200 OK]
+    B -- No --> G[Return 204 No Content]
+    
+    H[POST /api/account/reset-password] --> I{Verify OTP & Email}
+    I -- Valid --> J[Hash New Password]
+    J --> K[Update DB & Clear OTP]
+    K --> L[Return 204 No Content]
+    I -- Invalid/Expired --> M[Return 401 Unauthorized]
+```
 
 #### Add Admin (OTP Flow)
-1. SuperAdmin sends `POST /api/account/request-admin-otp` (newAdminEmail).
-2. API generates OTP (10m) and sends it to the new admin's email.
-3. SuperAdmin sends `POST /api/account/add-admin` (details, otp).
-4. API verifies OTP and SuperAdmin's identity, then creates the new admin.
+```mermaid
+graph TD
+    A[SuperAdmin requests OTP for new admin] --> B{Is SuperAdmin?}
+    B -- Yes --> C[Generate OTP & Send to New Admin]
+    C --> D[SuperAdmin sends POST /add-admin + OTP]
+    D --> E{Verify OTP}
+    E -- Valid --> F[Create Admin User]
+    F --> G[Return 201 Created]
+    E -- Invalid --> H[Return 400 Bad Request]
+    B -- No --> I[Return 403 Forbidden]
+```
 
 ### 2. User Onboarding & Verification
-1. User registers as Owner or Renter.
-2. User uploads verification documents (ID Image, License Image, Selfie, etc.) via `UserController`.
-3. Admin reviews user details and documents in `RequestController`.
-4. Admin approves or rejects via `PATCH /api/request/{id}/status`.
-5. User's `ApprovalStatus` is updated, enabling them to list cars or book trips.
+```mermaid
+graph TD
+    A[User Registers] --> B[Upload ID/License/Selfie]
+    B --> C[Status: Pending]
+    C --> D[Admin Reviews Documents]
+    D --> E{Approve?}
+    E -- Yes --> F[Status: Approved]
+    E -- No --> G[Status: Rejected]
+```
 
 ### 3. Car Management
-#### Car Listing
-1. Owner sends `POST /api/car` (car details, ownerId).
-2. API verifies Owner's approval status.
-3. Car is created with `Status: Pending`.
-4. Owner uploads car images and license documents.
-5. Admin reviews car listing in `RequestController` and approves it.
-6. Car status becomes `Available`.
-
-#### Availability Management
-- Owner can set unavailable dates via `CarUnavailableDate`.
-- These dates prevent renters from booking the car during those periods.
+```mermaid
+graph TD
+    A[Owner creates Car Listing] --> B[Upload Car Images/License]
+    B --> C[Status: Pending]
+    C --> D[Admin Reviews Listing]
+    D --> E{Approve?}
+    E -- Yes --> F[Status: Available]
+    E -- No --> G[Status: Rejected]
+```
 
 ### 4. Booking Process
-1. Renter searches for cars using `GET /api/car` with filters (location, dates, price).
-2. Renter selects a car and sends `POST /api/booking` (carId, dates).
-3. Booking is created with `Status: Pending`.
-4. (Optional) Owner reviews and approves the booking.
-5. Booking status becomes `Confirmed` once payment is initialized/completed.
+```mermaid
+graph TD
+    A[Renter selects Car & Dates] --> B[POST /api/booking]
+    B --> C[Status: Pending]
+    C --> D[Payment Initiation]
+    D --> E{Payment Success?}
+    E -- Yes --> F[Status: Confirmed]
+    E -- No --> G[Status: Cancelled/Pending]
+```
 
 ### 5. Payment Integration (Paymob)
-#### Payment Initiation
-1. Client calls `POST /api/payment/paymob/init` (bookingId, amount, method).
-2. API verifies `BookingId` and `UserId`.
-3. `PaymobService` authenticates with Paymob API and creates an Order.
-4. API returns a `payment_token` and `url`.
-5. Client opens the Paymob Iframe (Card) or redirects to Paymob (Wallet).
+```mermaid
+graph TD
+    A[POST /paymob/init] --> B[Auth with Paymob API]
+    B --> C[Create Paymob Order]
+    C --> D[Generate Payment Token]
+    D --> E[Return Token + Iframe URL]
+    E --> F[Client Completes Payment]
+    F --> G[Paymob sends Webhook/Callback]
+    G --> H{Verify HMAC Signature}
+    H -- Valid --> I[Update Payment & Booking Status]
+    I --> J[Notify Partner via Webhook]
+```
 
-#### Callback & Webhook Handling
-1. Paymob redirects to `GET /api/payment/paymob/callback` or sends `POST /api/payment/paymob/webhook`.
-2. API validates HMAC signature for security.
-3. If successful, API updates `Payment` status to `Succeeded` and updates `Booking` status.
-4. `WebhookService` notifies external partners (e.g., Flask listener).
-
-### 6. Post-Booking Interaction
-#### Reviews & Ratings
-- Renter can post a review after trip completion via `POST /api/review`.
-- Car's `AverageRating` is recalculated.
-
-#### Messaging
-- Owners and Renters can communicate via `POST /api/message`.
-
-#### Notifications
-- System sends notifications for booking status updates, payment confirmations, etc.
+### 6. Dashboard & Statistics
+```mermaid
+graph TD
+    A[GET /api/dashboard/stats] --> B[Calculate Total Revenue]
+    B --> C[Count Active Users/Cars/Bookings]
+    C --> D[Generate Charts Data]
+    D --> E[Return Comprehensive JSON]
+```
 
 ### 7. Global Error Handling
-1. `ExceptionMiddleware` intercepts all unhandled exceptions.
-2. It logs the error and returns a structured JSON response.
-3. In Development, it includes the stack trace; in Production, it returns a generic message.
-4. This ensures a consistent 500 error format for the frontend.
+```mermaid
+graph TD
+    A[Any Exception Occurs] --> B[ExceptionMiddleware catches it]
+    B --> C[Log error details]
+    C --> D{Is Development?}
+    D -- Yes --> E[Return JSON with Stack Trace]
+    D -- No --> F[Return Friendly JSON Message]
+```
 
 ## Key Files
 - Program: [Program.cs](file:///c:/Users/Administrator/source/repos/Rently.Management/WebApi/Program.cs)
