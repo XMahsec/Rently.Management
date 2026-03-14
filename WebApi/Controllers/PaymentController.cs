@@ -19,13 +19,17 @@ namespace Rently.Management.WebApi.Controllers
         /// This controller exposes card/wallet flows and uses HMAC to validate Paymob responses.
         /// </summary>
         private readonly IPaymentRepository _paymentRepository;
+        private readonly IBookingRepository _bookingRepository;
+        private readonly IUserRepository _userRepository;
         private readonly PaymobService _paymobService;
         private readonly IConfiguration _configuration;
         private readonly WebhookService _webhookService;
 
-        public PaymentController(IPaymentRepository paymentRepository, PaymobService paymobService, IConfiguration configuration, WebhookService webhookService)
+        public PaymentController(IPaymentRepository paymentRepository, IBookingRepository bookingRepository, IUserRepository userRepository, PaymobService paymobService, IConfiguration configuration, WebhookService webhookService)
         {
             _paymentRepository = paymentRepository;
+            _bookingRepository = bookingRepository;
+            _userRepository = userRepository;
             _paymobService = paymobService;
             _configuration = configuration;
             _webhookService = webhookService;
@@ -56,6 +60,23 @@ namespace Rently.Management.WebApi.Controllers
         /// </summary>
         public async Task<ActionResult<object>> InitPaymob([FromBody] PaymobInitRequestDto dto)
         {
+            // Verify booking exists
+            var bookingExists = await _bookingRepository.ExistsAsync(dto.BookingId);
+            if (!bookingExists)
+            {
+                return BadRequest(new { message = $"Booking with ID {dto.BookingId} does not exist." });
+            }
+
+            // Verify user exists
+            if (dto.UserId > 0)
+            {
+                var userExists = await _userRepository.ExistsAsync(dto.UserId);
+                if (!userExists)
+                {
+                    return BadRequest(new { message = $"User with ID {dto.UserId} does not exist." });
+                }
+            }
+
             var amountCents = (int)(dto.Amount * 100);
             var method = (dto.Method ?? "card").ToLowerInvariant();
             var integrationId = method == "wallet"
@@ -95,6 +116,23 @@ namespace Rently.Management.WebApi.Controllers
             [FromQuery] string phone = "",
             [FromQuery] string method = "card")
         {
+            // Verify booking exists
+            var bookingExists = await _bookingRepository.ExistsAsync(bookingId);
+            if (!bookingExists)
+            {
+                return BadRequest(new { message = $"Booking with ID {bookingId} does not exist." });
+            }
+
+            // Verify user exists
+            if (userId.HasValue && userId.Value > 0)
+            {
+                var userExists = await _userRepository.ExistsAsync(userId.Value);
+                if (!userExists)
+                {
+                    return BadRequest(new { message = $"User with ID {userId.Value} does not exist." });
+                }
+            }
+
             var amountCents = (int)(amount * 100);
             method = (method ?? "card").ToLowerInvariant();
             var integrationId = method == "wallet"

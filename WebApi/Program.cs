@@ -10,6 +10,7 @@ using System.Text;
 using Rently.Management.Domain.Entities;
 using Rently.Management.WebApi.Services;
 using Rently.Management.WebApi.Serialization;
+using Rently.Management.WebApi.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,7 @@ builder.Services.AddHttpClient("paymob", client =>
 builder.Services.AddSingleton<PaymobService>();
 builder.Services.AddSingleton<PasswordService>();
 builder.Services.AddSingleton<WebhookService>();
+builder.Services.AddSingleton<IEmailService, EmailService>();
 
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "";
@@ -126,6 +128,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+app.UseMiddleware<ExceptionMiddleware>();
 
 // Configure the HTTP request pipeline.
 app.UseSwagger();

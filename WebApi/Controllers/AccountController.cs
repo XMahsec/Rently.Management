@@ -16,12 +16,14 @@ namespace Rently.Management.WebApi.Controllers
         private readonly ApplicationDbContext _context;
         private readonly PasswordService _passwordService;
         private readonly WebhookService _webhookService;
+        private readonly IEmailService _emailService;
 
-        public AccountController(ApplicationDbContext context, PasswordService passwordService, WebhookService webhookService)
+        public AccountController(ApplicationDbContext context, PasswordService passwordService, WebhookService webhookService, IEmailService emailService)
         {
             _context = context;
             _passwordService = passwordService;
             _webhookService = webhookService;
+            _emailService = emailService;
         }
 
         [HttpPost("change-name")]
@@ -77,18 +79,31 @@ namespace Rently.Management.WebApi.Controllers
             var email = dto.Email.Trim().ToLowerInvariant();
             var user = _context.Users.FirstOrDefault(u => (u.Email ?? "").ToLower() == email);
             if (user == null) return NoContent();
-            var token = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
-            user.PasswordResetToken = token;
-            user.PasswordResetTokenExpires = DateTime.UtcNow.AddMinutes(30);
+
+            // Generate 6-digit OTP
+            var otp = new Random().Next(100000, 999999).ToString();
+            user.PasswordResetToken = otp; // We reuse this column for OTP
+            user.PasswordResetTokenExpires = DateTime.UtcNow.AddMinutes(10); // OTP expires in 10 minutes
             user.UpdatedAt = DateTime.UtcNow;
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
+
+            try
+            {
+                await _emailService.SendEmailAsync(user.Email!, "Password Reset OTP", $"Your OTP for password reset is: <b>{otp}</b>. It will expire in 10 minutes.");
+            }
+            catch (Exception ex)
+            {
+                // In a real app, log the error. For now, if we're in debug, return it.
+                if (debug) return StatusCode(500, new { message = "Failed to send email", error = ex.Message });
+            }
+
             if (debug)
             {
                 var env = HttpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
                 if (string.Equals(env.EnvironmentName, "Development", StringComparison.OrdinalIgnoreCase))
                 {
-                    return Ok(new { message = "Reset requested", dev_token = token });
+                    return Ok(new { message = "Reset requested", dev_token = otp });
                 }
             }
             return Ok(new { message = "Reset requested" });
@@ -117,25 +132,65 @@ namespace Rently.Management.WebApi.Controllers
             return NoContent();
         }
 
+        private static readonly Dictionary<string, (string otp, DateTime expires)> _adminOtps = new();
+
+        [HttpPost("request-admin-otp")]
+        [Authorize]
+        /// <summary>
+        /// Request OTP to add a new admin.
+        /// </summary>
+        public async Task<IActionResult> RequestAdminOtp([FromBody] RequestAddAdminOtpDto dto)
+        {
+            var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
+            if (!string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase)) return Forbid();
+
+            var email = dto.Email.Trim().ToLowerInvariant();
+            var exists = _context.Users.Any(u => (u.Email ?? "").ToLower() == email);
+            if (exists) return Conflict(new { message = "Email already exists." });
+
+            var otp = new Random().Next(100000, 999999).ToString();
+            _adminOtps[email] = (otp, DateTime.UtcNow.AddMinutes(10));
+
+            try
+            {
+                await _emailService.SendEmailAsync(email, "New Admin Verification OTP", $"Your OTP for admin registration is: <b>{otp}</b>. It will expire in 10 minutes.");
+                return Ok(new { message = "OTP sent successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Failed to send email", error = ex.Message });
+            }
+        }
+
         [HttpPost("add-admin")]
         [Authorize]
         /// <summary>
-        /// Add a new admin user (requires Role=Admin in the JWT).
+        /// Add a new admin user (requires Role=Admin in the JWT and valid OTP).
         /// </summary>
         public async Task<IActionResult> AddAdmin([FromBody] AddAdminDto dto)
         {
             var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
             if (!string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase)) return Forbid();
+
+            var email = dto.Email.Trim().ToLowerInvariant();
+            
+            // Verify OTP
+            if (!_adminOtps.TryGetValue(email, out var otpData) || otpData.otp != dto.Otp || otpData.expires < DateTime.UtcNow)
+            {
+                return BadRequest(new { message = "Invalid or expired OTP." });
+            }
+            _adminOtps.Remove(email); // Remove after use
+
             // Only Super Admin (configured Admin:Email) can add another admin
             var actorEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? "";
-            var superAdminEmail = (_context.Database != null) // just to avoid nullables; config below
-                ? HttpContext.RequestServices.GetRequiredService<IConfiguration>()["Admin:Email"] ?? ""
-                : "";
+            var superAdminEmail = HttpContext.RequestServices.GetRequiredService<IConfiguration>()["Admin:Email"] ?? "";
+            
             if (!actorEmail.Equals(superAdminEmail, StringComparison.OrdinalIgnoreCase))
                 return Forbid();
-            var email = dto.Email.Trim().ToLowerInvariant();
+
             var exists = _context.Users.Any(u => (u.Email ?? "").ToLower() == email);
             if (exists) return Conflict();
+
             var pair = _passwordService.HashPassword(dto.Password);
             var user = new Rently.Management.Domain.Entities.User
             {

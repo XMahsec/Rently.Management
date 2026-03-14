@@ -11,11 +11,13 @@ namespace Rently.Management.WebApi.Controllers
     public class CarController : ControllerBase
     {
         private readonly ICarRepository _carRepository;
+        private readonly IUserRepository _userRepository;
         private readonly WebhookService _webhookService;
 
-        public CarController(ICarRepository carRepository, WebhookService webhookService)
+        public CarController(ICarRepository carRepository, IUserRepository userRepository, WebhookService webhookService)
         {
             _carRepository = carRepository;
+            _userRepository = userRepository;
             _webhookService = webhookService;
         }
 
@@ -99,6 +101,13 @@ namespace Rently.Management.WebApi.Controllers
         [HttpPost]
         public async Task<ActionResult<CarDto>> CreateCar([FromBody] CreateCarDto dto)
         {
+            // Verify owner exists
+            var owner = await _userRepository.GetByIdAsync(dto.OwnerId);
+            if (owner == null)
+            {
+                return BadRequest(new { message = $"User with ID {dto.OwnerId} does not exist." });
+            }
+
             var car = new Car
             {
                 OwnerId = dto.OwnerId,

@@ -56,5 +56,15 @@ namespace Rently.Management.WebApi.DTOs
         [MinLength(12)]
         [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{12,}$")]
         public string Password { get; set; } = "";
+        [Required]
+        [StringLength(6, MinimumLength = 6)]
+        public string Otp { get; set; } = "";
+    }
+
+    public class RequestAddAdminOtpDto
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = "";
     }
 }
