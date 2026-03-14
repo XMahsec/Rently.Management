@@ -30,55 +30,83 @@ Backend for the “Management” part of the mobile app (Flutter). It provides J
 - SQL Server (LocalDB or any accessible instance)
 - Paymob test/development credentials (ApiKey, IntegrationIdCard, IntegrationIdWallet, IframeId, HmacSecret)
 
-## Configuration
-1) Clone repository:
-   - `git clone https://github.com/XMahsec/Rently.Management.git`
-   - `cd Rently.Management`
-2) Restore packages:
-   - `dotnet restore`
-3) Database connection:
-   - Edit `WebApi/appsettings.json` → `ConnectionStrings:DefaultConnection` to match your SQL instance.
-4) Development keys and Secrets (MANDATORY for payments/auth/email testing):
-   - Use `dotnet user-secrets` to store sensitive data locally:
-     - `dotnet user-secrets set "Admin:Email" "your-admin-email@example.com"`
-     - `dotnet user-secrets set "Admin:Password" "YourStrongPassword123!"`
-     - `dotnet user-secrets set "Smtp:Email" "your-email@gmail.com"`
-     - `dotnet user-secrets set "Smtp:Password" "<Your-Gmail-App-Password>"`
-     - `dotnet user-secrets set "Paymob:ApiKey" "your-paymob-api-key"`
-   - `WebApi/appsettings.Development.json`
-     - Set remaining Paymob values: `IntegrationIdCard`, `IntegrationIdWallet`, `IframeId`, `HmacSecret`, `RedirectionUrl`
-   - JWT settings: `Jwt:Issuer`, `Jwt:Audience`, `Jwt:Key`, `Jwt:ExpiresMinutes` (or via environment variables)
-   - SMTP configuration in `appsettings.json`:
-     - `Smtp:Host`: `smtp.gmail.com`
-     - `Smtp:Port`: `587`
-     - `Smtp:EnableSsl`: `true`
-5) Database migrations:
-   - If your local DB is empty or missing latest schema:
-     - `dotnet ef migrations add InitRun`
-     - `dotnet ef database update`
+## 🔐 Security & Configuration
+This project follows professional security standards for handling sensitive data. **Never commit real credentials to the repository.**
 
-## Run
-- `dotnet run --project .\Rently.Management.csproj`
-- Visit Swagger at http://localhost:5000/swagger
-- Use “Authorize” to set `Bearer <token>` after login
+### 1. Sensitive Data (User Secrets)
+Use `dotnet user-secrets` to store your private keys locally during development:
+```bash
+# Admin Credentials for Dev Login
+dotnet user-secrets set "Admin:Email" "admin@example.com"
+dotnet user-secrets set "Admin:Password" "YourStrongPassword123!"
 
-## Authentication Flow
-- Admin dev login:
-  - `POST /api/auth/login`
-    - Body: `{ "email": "<Admin:Email>", "password": "<Admin:Password>" }`
-  - Returns a JWT containing claims: sub (userId), email, name, role
-- Global authorization:
-  - Fallback policy requires authentication for all endpoints unless explicitly marked `[AllowAnonymous]`
+# SMTP Configuration (Gmail recommended)
+dotnet user-secrets set "Smtp:Email" "your-app-email@gmail.com"
+dotnet user-secrets set "Smtp:Password" "your-16-char-app-password"
 
-## Account Management
-- `POST /api/account/change-name` (JWT): Change display name
-- `POST /api/account/change-password` (JWT): Verify current and set new password (PBKDF2)
-- `POST /api/account/request-reset`: Generates a 6-digit OTP sent via email (valid 10m)
-- `POST /api/account/reset-password`: Verify OTP + email then set new password
-- `POST /api/account/request-admin-otp` (JWT, role=Admin): Sends a verification OTP to the new admin's email
-- `POST /api/account/add-admin` (JWT, role=Admin): Create a new Admin user (requires valid OTP from the new admin)
-- Email immutability:
-  - User email cannot be changed via update; requests attempting to change email return 400
+# Paymob Integration
+dotnet user-secrets set "Paymob:ApiKey" "zx_prd_..."
+dotnet user-secrets set "Paymob:HmacSecret" "..."
+```
+
+### 2. SMTP Settings (`appsettings.json`)
+The infrastructure is ready for Google SMTP. Ensure these settings are in your `appsettings.json`:
+```json
+"Smtp": {
+  "Host": "smtp.gmail.com",
+  "Port": 587,
+  "EnableSsl": true,
+  "Email": "__USE_USER_SECRETS__",
+  "Password": "__USE_USER_SECRETS__"
+}
+```
+
+---
+
+## 🚀 Key Features & Endpoints
+
+### 📧 Account & Identity (OTP-based)
+We have implemented a secure 2-step verification process for sensitive actions.
+
+| Endpoint | Method | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `/api/account/request-reset` | `POST` | Public | Sends a 6-digit OTP to user's email for password recovery. |
+| `/api/account/reset-password` | `POST` | Public | Resets password using the received OTP (Expires in 10m). |
+| `/api/account/request-admin-otp` | `POST` | Admin | Sends verification OTP to the *new* admin's email. |
+| `/api/account/add-admin` | `POST` | Admin | Finalizes adding a new admin using the verified OTP. |
+
+### 💳 Payment Integration (Paymob)
+Professional integration with Paymob gateway supporting multiple flows.
+- **Card Flow**: Returns a secure iframe URL.
+- **Wallet Flow**: Handles direct redirection.
+- **HMAC Validation**: All callbacks and webhooks are cryptographically verified to prevent fraud.
+
+### 🛡️ Global Error Handling
+The API includes a **Global Exception Middleware** that captures all unhandled errors and returns a consistent, clean JSON structure:
+```json
+{
+  "statusCode": 400,
+  "message": "Friendly error message",
+  "details": "Stack trace (only visible in Development mode)"
+}
+```
+*Note: This prevents database-level errors (like Foreign Key violations) from crashing the client or exposing sensitive DB info.*
+
+---
+
+## 🛠️ Installation & Run
+1. **Clone & Restore**:
+   ```bash
+   git clone https://github.com/XMahsec/Rently.Management.git
+   dotnet restore
+   ```
+2. **Database**: Update the connection string in `appsettings.json`.
+3. **Secrets**: Set your secrets as described in the Security section above.
+4. **Run**:
+   ```bash
+   dotnet run --project WebApi/Rently.Management.csproj
+   ```
+5. **Swagger**: Access documentation at `http://localhost:5000/swagger`
 
 ## Payments (Paymob)
 - Checkout (card/wallet):
