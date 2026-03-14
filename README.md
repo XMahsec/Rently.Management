@@ -14,6 +14,7 @@ Backend for the “Management” part of the mobile app (Flutter). It provides J
 - .NET 9, ASP.NET Core Web API
 - Entity Framework Core (SQL Server)
 - JWT Bearer Authentication
+- Google SMTP (OTP Verification)
 - Swashbuckle/Swagger
 - Paymob payment gateway integration
 
