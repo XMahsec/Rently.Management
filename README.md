@@ -63,25 +63,78 @@ The infrastructure is ready for Google SMTP. Ensure these settings are in your `
 
 ---
 
-## 🚀 Key Features & Endpoints
+## � API Reference
 
-### 📧 Account & Identity (OTP-based)
-We have implemented a secure 2-step verification process for sensitive actions.
-
+### � Authentication (`/api/auth`)
 | Endpoint | Method | Auth | Description |
 | :--- | :--- | :--- | :--- |
-| `/api/account/request-reset` | `POST` | Public | Sends a 6-digit OTP to user's email for password recovery. |
-| `/api/account/reset-password` | `POST` | Public | Resets password using the received OTP (Expires in 10m). |
-| `/api/account/request-admin-otp` | `POST` | Admin | Sends verification OTP to the *new* admin's email. |
-| `/api/account/add-admin` | `POST` | Admin | Finalizes adding a new admin using the verified OTP. |
+| `/login` | `POST` | Public | Admin/User login, returns JWT and user details. |
 
-### 💳 Payment Integration (Paymob)
-Professional integration with Paymob gateway supporting multiple flows.
-- **Card Flow**: Returns a secure iframe URL.
-- **Wallet Flow**: Handles direct redirection.
-- **HMAC Validation**: All callbacks and webhooks are cryptographically verified to prevent fraud.
+### 👤 Account Management (`/api/account`)
+| Endpoint | Method | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `/change-name` | `POST` | JWT | Update current user's display name. |
+| `/change-password` | `POST` | JWT | Update password after verifying the current one. |
+| `/request-reset` | `POST` | Public | Send 6-digit OTP to email for password recovery. |
+| `/reset-password` | `POST` | Public | Reset password using email, OTP, and new password. |
+| `/request-admin-otp` | `POST` | Admin | Send verification OTP to a new admin's email. |
+| `/add-admin` | `POST` | Admin | Create a new Admin account using the verified OTP. |
 
-### 🛡️ Global Error Handling
+### � Car Management (`/api/car`)
+| Endpoint | Method | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `/statistics` | `GET` | JWT | Get car counts (Available, On Trip, Pending, Offline). |
+| `/` | `GET` | JWT | List cars with paging, search, and status filters. |
+| `/{id}` | `GET` | JWT | Get detailed information for a specific car. |
+| `/` | `POST` | JWT | Create a new car listing (Status: Pending). |
+| `/{id}` | `PUT` | JWT | Update car details (Brand, Model, Price, etc.). |
+| `/{id}` | `DELETE` | JWT | Remove a car listing. |
+| `/{id}/status` | `PATCH` | JWT | Update car status (e.g., Approve/Reject listing). |
+
+### 📅 Booking Management (`/api/booking`)
+| Endpoint | Method | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `/statistics` | `GET` | JWT | Get booking stats (Active, Pick-up today, Canceled). |
+| `/` | `GET` | JWT | List all bookings with paging, search, and status. |
+| `/{id}` | `GET` | JWT | Get details of a specific booking. |
+| `/{id}/status` | `PATCH` | JWT | Update booking status (e.g., Cancel, Complete). |
+| `/refund-all` | `POST` | JWT | Batch mark bookings for refund. |
+
+### 💳 Payment & Paymob (`/api/payment`)
+| Endpoint | Method | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `/statistics` | `GET` | JWT | Get revenue, profit, and pending payout stats. |
+| `/paymob/init` | `POST` | JWT | Initialize Paymob payment (Returns `payment_token`). |
+| `/paymob/checkout` | `GET` | JWT | Direct checkout (Returns Iframe HTML or Redirect). |
+| `/paymob/callback` | `GET` | Public | Paymob success/failure redirection handler. |
+| `/paymob/webhook` | `POST` | Public | Paymob server-to-server status notification. |
+
+### 📊 Dashboard (`/api/dashboard`)
+| Endpoint | Method | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `/stats` | `GET` | JWT | High-level totals for Users, Cars, Bookings, Profit. |
+| `/weekly-revenue` | `GET` | JWT | Daily revenue data for the last 7 days. |
+| `/bookings-by-month` | `GET` | JWT | Monthly booking counts for chart representation. |
+
+### 📝 Verification Requests (`/api/request`)
+| Endpoint | Method | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `/` | `GET` | JWT | List pending requests (User verification, Car listing). |
+| `/{id}` | `GET` | JWT | Get details and documents for a specific request. |
+| `/{id}/status` | `PATCH` | JWT | Approve or Reject a verification request. |
+
+### 👥 User Management (`/api/user`)
+| Endpoint | Method | Auth | Description |
+| :--- | :--- | :--- | :--- |
+| `/` | `GET` | JWT | List all users with paging and search. |
+| `/{id}` | `GET` | JWT | Get profile details for a specific user. |
+| `/` | `POST` | JWT | Create a new user manually. |
+| `/{id}` | `PUT` | JWT | Update user information (Role, Approval Status, etc.). |
+| `/{id}` | `DELETE` | JWT | Delete a user account. |
+
+---
+
+## 🛡️ Global Error Handling
 The API includes a **Global Exception Middleware** that captures all unhandled errors and returns a consistent, clean JSON structure:
 ```json
 {
