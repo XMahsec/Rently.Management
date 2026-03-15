@@ -83,7 +83,8 @@ namespace Rently.Management.WebApi.Controllers
                 ? _configuration["Paymob:IntegrationIdWallet"] ?? ""
                 : _configuration["Paymob:IntegrationIdCard"] ?? "";
             var useIframe = method != "wallet";
-            var (orderId, paymentToken, url) = await _paymobService.InitiateAsync(amountCents, dto.Currency, dto.Email, dto.FullName, dto.Phone, integrationId, useIframe);
+            var fullName = $"{dto.FirstName} {dto.LastName}".Trim();
+            var (orderId, paymentToken, url) = await _paymobService.InitiateAsync(amountCents, dto.Currency, dto.Email, fullName, dto.Phone, integrationId, useIframe);
             var payment = new Payment
             {
                 BookingId = dto.BookingId,

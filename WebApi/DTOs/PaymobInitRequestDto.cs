@@ -19,7 +19,6 @@ namespace Rently.Management.WebApi.DTOs
         public string FirstName { get; set; } = "";
         [Required]
         public string LastName { get; set; } = "";
-        public string FullName => $"{FirstName} {LastName}".Trim();
         [Required]
         public string Phone { get; set; } = "";
         [Required]

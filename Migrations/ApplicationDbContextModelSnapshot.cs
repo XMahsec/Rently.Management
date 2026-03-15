@@ -519,6 +519,11 @@ namespace Rently.Management.Migrations
                         .HasColumnType("nvarchar(255)")
                         .HasColumnName("email");
 
+                    b.Property<string>("FirstName")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("first_name");
+
                     b.Property<string>("IdImage")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)")
@@ -529,6 +534,11 @@ namespace Rently.Management.Migrations
                         .HasColumnType("nvarchar(500)")
                         .HasColumnName("job_proof_image");
 
+                    b.Property<string>("LastName")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("last_name");
+
                     b.Property<string>("LicenseImage")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)")
@@ -538,11 +548,6 @@ namespace Rently.Management.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
                         .HasColumnName("license_number");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)")
-                        .HasColumnName("name");
 
                     b.Property<string>("Nationality")
                         .HasMaxLength(100)
