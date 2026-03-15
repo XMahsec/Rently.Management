@@ -1,5 +1,13 @@
 # Rently.Management Architecture
 
+This document outlines the technical architecture, database schema, and core workflows of the Rently Management system.
+
+## Project Structure Overview
+- **Domain**: Contains core entities, business logic, and repository interfaces.
+- **Infrastructure**: Handles database context, EF configurations, and repository implementations.
+- **WebApi**: The entry point containing controllers, DTOs, services, and middleware.
+- **Migrations**: Database versioning and schema history.
+
 ## Database ER Diagram (Complete)
 ```mermaid
 erDiagram
@@ -348,6 +356,7 @@ graph TD
     G --> H{Verify HMAC Signature}
     H -- Valid --> I[Update Payment & Booking Status]
     I --> J[Notify Partner via Webhook]
+```
 
 ### 6. Refund Process
 ```mermaid
