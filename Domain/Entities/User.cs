@@ -11,6 +11,7 @@ public class User : AuditableEntity
     public string? Email { get; set; }
     public string? Phone { get; set; }
     public string? Role { get; set; }               // "Owner", "Renter", "Admin" or enum
+    public bool IsSuperAdmin { get; set; } = false;
     public string? Nationality { get; set; }
     public string? PreferredLanguage { get; set; }
     public string? LicenseNumber { get; set; }

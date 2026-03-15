@@ -228,7 +228,7 @@
           }
         },
         {
-          "name": "Request Add Admin OTP",
+          "name": "Request Add Admin OTP (SuperAdmin Only)",
           "request": {
             "method": "POST",
             "header": [
@@ -260,7 +260,7 @@
           }
         },
         {
-          "name": "Add Admin with OTP",
+          "name": "Add Admin with OTP (SuperAdmin Only)",
           "request": {
             "method": "POST",
             "header": [

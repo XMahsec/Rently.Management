@@ -529,6 +529,12 @@ namespace Rently.Management.Migrations
                         .HasColumnType("nvarchar(500)")
                         .HasColumnName("id_image");
 
+                    b.Property<bool>("IsSuperAdmin")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_super_admin");
+
                     b.Property<string>("JobProofImage")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)")

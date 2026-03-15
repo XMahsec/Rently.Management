@@ -28,6 +28,7 @@ erDiagram
       string Email UNIQUE
       string Phone UNIQUE
       string Role "Owner, Renter, Admin"
+      bool IsSuperAdmin
       string ApprovalStatus "Pending, Approved, Rejected"
       string Nationality
       string PreferredLanguage
@@ -154,6 +155,7 @@ classDiagram
       +string Email
       +string Phone
       +string Role
+      +bool IsSuperAdmin
       +string ApprovalStatus
       +string Nationality
       +string PreferredLanguage
@@ -346,9 +348,35 @@ graph TD
     G --> H{Verify HMAC Signature}
     H -- Valid --> I[Update Payment & Booking Status]
     I --> J[Notify Partner via Webhook]
+
+### 6. Refund Process
+```mermaid
+graph TD
+    A[Admin initiates Refund] --> B{Payment exists & Succeeded?}
+    B -- Yes --> C[Create new Refund record]
+    C --> D[Update original Payment to 'Refunding']
+    D --> E[Notify Partner via Webhook]
+    E -- F[Return 200 OK]
+    B -- No --> G[Return 404/400 Error]
 ```
 
-### 6. Dashboard & Statistics
+### 7. Partner Integration (Flask Webhooks)
+The system notifies external services (e.g., a Flask app) about critical events using the `WebhookService`.
+```mermaid
+graph TD
+    A[.NET Event Triggered] --> B[WebhookService.PublishAsync]
+    B --> C{Webhooks Enabled?}
+    C -- Yes --> D[Construct JSON Envelope]
+    D --> E[Compute HMAC Signature]
+    E --> F[Send POST to Flask URL]
+    F --> G[Flask App receives Request]
+    G --> H{Verify Signature Header}
+    H -- Valid --> I[Flask App processes Data]
+    H -- Invalid --> J[Flask App rejects Request]
+    C -- No --> K[Exit]
+```
+
+### 8. Dashboard & Statistics
 ```mermaid
 graph TD
     A[GET /api/dashboard/stats] --> B[Calculate Total Revenue]
@@ -357,7 +385,7 @@ graph TD
     D --> E[Return Comprehensive JSON]
 ```
 
-### 7. Global Error Handling
+### 9. Global Error Handling
 ```mermaid
 graph TD
     A[Any Exception Occurs] --> B[ExceptionMiddleware catches it]
@@ -368,9 +396,9 @@ graph TD
 ```
 
 ## Key Files
-- Program: [Program.cs](file:///c:/Users/Administrator/source/repos/Rently.Management/WebApi/Program.cs)
-- Auth: [AuthController.cs](file:///c:/Users/Administrator/source/repos/Rently.Management/WebApi/Controllers/AuthController.cs)
-- Payments: [PaymentController.cs](file:///c:/Users/Administrator/source/repos/Rently.Management/WebApi/Controllers/PaymentController.cs), [PaymobService.cs](file:///c:/Users/Administrator/source/repos/Rently.Management/WebApi/Services/PaymobService.cs)
-- Account: [AccountController.cs](file:///c:/Users/Administrator/source/repos/Rently.Management/WebApi/Controllers/AccountController.cs), [PasswordService.cs](file:///c:/Users/Administrator/source/repos/Rently.Management/WebApi/Services/PasswordService.cs), [EmailService.cs](file:///c:/Users/Administrator/source/repos/Rently.Management/WebApi/Services/EmailService.cs)
-- Middleware: [ExceptionMiddleware.cs](file:///c:/Users/Administrator/source/repos/Rently.Management/WebApi/Middleware/ExceptionMiddleware.cs)
-- Entities: [User.cs](file:///c:/Users/Administrator/source/repos/Rently.Management/Domain/Entities/User.cs), [Car.cs](file:///c:/Users/Administrator/source/repos/Rently.Management/Domain/Entities/Car.cs), [Booking.cs](file:///c:/Users/Administrator/source/repos/Rently.Management/Domain/Entities/Booking.cs), [Payment.cs](file:///c:/Users/Administrator/source/repos/Rently.Management/Domain/Entities/Payment.cs)
+- Program: [Program.cs](../WebApi/Program.cs)
+- Auth: [AuthController.cs](../WebApi/Controllers/AuthController.cs)
+- Payments: [PaymentController.cs](../WebApi/Controllers/PaymentController.cs), [PaymobService.cs](../WebApi/Services/PaymobService.cs)
+- Account: [AccountController.cs](../WebApi/Controllers/AccountController.cs), [PasswordService.cs](../WebApi/Services/PasswordService.cs), [EmailService.cs](../WebApi/Services/EmailService.cs)
+- Middleware: [ExceptionMiddleware.cs](../WebApi/Middleware/ExceptionMiddleware.cs)
+- Entities: [User.cs](../Domain/Entities/User.cs), [Car.cs](../Domain/Entities/Car.cs), [Booking.cs](../Domain/Entities/Booking.cs), [Payment.cs](../Domain/Entities/Payment.cs)

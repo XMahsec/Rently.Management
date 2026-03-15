@@ -136,14 +136,16 @@ namespace Rently.Management.WebApi.Controllers
         private static readonly Dictionary<string, (string otp, DateTime expires)> _adminOtps = new();
 
         [HttpPost("request-admin-otp")]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         /// <summary>
         /// Request OTP to add a new admin.
         /// </summary>
         public async Task<IActionResult> RequestAdminOtp([FromBody] RequestAddAdminOtpDto dto)
         {
-            var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
-            if (!string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase)) return Forbid();
+            var sub = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+            if (!int.TryParse(sub, out var currentUserId)) return Unauthorized();
+            var currentUser = await _context.Users.FindAsync(currentUserId);
+            if (currentUser == null || !currentUser.IsSuperAdmin) return Forbid();
 
             var email = dto.Email.Trim().ToLowerInvariant();
             var exists = _context.Users.Any(u => (u.Email ?? "").ToLower() == email);
@@ -164,14 +166,16 @@ namespace Rently.Management.WebApi.Controllers
         }
 
         [HttpPost("add-admin")]
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         /// <summary>
         /// Add a new admin user (requires Role=Admin in the JWT and valid OTP).
         /// </summary>
         public async Task<IActionResult> AddAdmin([FromBody] AddAdminDto dto)
         {
-            var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
-            if (!string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase)) return Forbid();
+            var sub = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+            if (!int.TryParse(sub, out var currentUserId)) return Unauthorized();
+            var currentUser = await _context.Users.FindAsync(currentUserId);
+            if (currentUser == null || !currentUser.IsSuperAdmin) return Forbid();
 
             var email = dto.Email.Trim().ToLowerInvariant();
             
@@ -181,13 +185,6 @@ namespace Rently.Management.WebApi.Controllers
                 return BadRequest(new { message = "Invalid or expired OTP." });
             }
             _adminOtps.Remove(email); // Remove after use
-
-            // Only Super Admin (configured Admin:Email) can add another admin
-            var actorEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? "";
-            var superAdminEmail = HttpContext.RequestServices.GetRequiredService<IConfiguration>()["Admin:Email"] ?? "";
-            
-            if (!actorEmail.Equals(superAdminEmail, StringComparison.OrdinalIgnoreCase))
-                return Forbid();
 
             var exists = _context.Users.Any(u => (u.Email ?? "").ToLower() == email);
             if (exists) return Conflict();

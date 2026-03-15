@@ -159,6 +159,7 @@ using (var scope = app.Services.CreateScope())
                 LastName = "Admin",
                 Email = adminEmail,
                 Role = "Admin",
+                IsSuperAdmin = true,
                 ApprovalStatus = "Approved",
                 CreatedAt = DateTime.UtcNow
             };

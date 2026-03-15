@@ -8,6 +8,7 @@ namespace Rently.Management.WebApi.DTOs
         public string? FullName => $"{FirstName} {LastName}".Trim();
         public string? Email { get; set; }
         public string? Role { get; set; }
+        public bool IsSuperAdmin { get; set; }
         public int UserId { get; set; }
     }
 }

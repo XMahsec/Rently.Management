@@ -69,6 +69,7 @@ namespace Rently.Management.WebApi.Controllers
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
+                new Claim("is_super_admin", user.IsSuperAdmin.ToString().ToLower()),
                 new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}".Trim()),
                 new Claim(ClaimTypes.Role, user.Role ?? "User")
             };
@@ -91,6 +92,7 @@ namespace Rently.Management.WebApi.Controllers
                 LastName = user.LastName,
                 Email = user.Email,
                 Role = user.Role,
+                IsSuperAdmin = user.IsSuperAdmin,
                 UserId = user.Id
             });
         }

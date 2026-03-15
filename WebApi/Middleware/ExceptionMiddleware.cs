@@ -2,6 +2,8 @@ using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 
 namespace Rently.Management.WebApi.Middleware
 {
@@ -28,11 +30,37 @@ namespace Rently.Management.WebApi.Middleware
             {
                 _logger.LogError(ex, ex.Message);
                 context.Response.ContentType = "application/json";
-                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                
+                var statusCode = (int)HttpStatusCode.InternalServerError;
+                var message = "An unexpected error occurred.";
+
+                // Professional Handling for specific exception types
+                switch (ex)
+                {
+                    case UnauthorizedAccessException:
+                        statusCode = (int)HttpStatusCode.Unauthorized;
+                        message = "You are not authorized to access this resource.";
+                        break;
+                    case KeyNotFoundException:
+                        statusCode = (int)HttpStatusCode.NotFound;
+                        message = "The requested resource was not found.";
+                        break;
+                    case DbUpdateException dbEx:
+                        statusCode = (int)HttpStatusCode.BadRequest;
+                        message = "A database error occurred. Please check your data constraints.";
+                        // Log more details internally but don't expose all to client
+                        break;
+                    case InvalidOperationException:
+                        statusCode = (int)HttpStatusCode.BadRequest;
+                        message = ex.Message;
+                        break;
+                }
+
+                context.Response.StatusCode = statusCode;
 
                 var response = _env.IsDevelopment()
-                    ? new ApiException(context.Response.StatusCode, ex.Message, ex.StackTrace?.ToString())
-                    : new ApiException(context.Response.StatusCode, "Internal Server Error");
+                    ? new ApiException(statusCode, ex.Message, ex.StackTrace?.ToString())
+                    : new ApiException(statusCode, message);
 
                 var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
                 var json = JsonSerializer.Serialize(response, options);

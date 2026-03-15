@@ -89,11 +89,11 @@ The infrastructure is ready for Google SMTP. Ensure these settings are in your `
   - **Success**: `204 No Content`
   - **Errors**: `401 Unauthorized` (Invalid/Expired OTP), `404 Not Found`
   - **Description**: Resets password using email, OTP, and new password.
-- `POST /request-admin-otp` [Admin]
+- `POST /request-admin-otp` [Admin (SuperAdmin Only)]
   - **Success**: `200 OK`
   - **Errors**: `403 Forbidden`, `409 Conflict` (Email exists)
   - **Description**: Sends verification OTP to a potential new admin's email.
-- `POST /add-admin` [Admin]
+- `POST /add-admin` [Admin (SuperAdmin Only)]
   - **Success**: `201 Created`
   - **Errors**: `403 Forbidden`, `400 Bad Request` (Invalid OTP), `409 Conflict`
   - **Description**: Finalizes admin creation using verified OTP. (Requires FirstName and LastName)

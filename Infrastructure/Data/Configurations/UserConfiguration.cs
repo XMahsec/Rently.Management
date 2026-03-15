@@ -16,6 +16,7 @@ namespace Rently.Management.Infrastructure.Data.Configurations
             builder.Property(u => u.FirstName).HasMaxLength(150);
             builder.Property(u => u.LastName).HasMaxLength(150);
             builder.Property(u => u.Email).HasMaxLength(255);
+            builder.Property(u => u.IsSuperAdmin).HasDefaultValue(false);
             builder.Property(u => u.Phone).HasMaxLength(30);
             builder.Property(u => u.Role).HasMaxLength(50);
             builder.Property(u => u.Nationality).HasMaxLength(100);
