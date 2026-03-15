@@ -365,7 +365,7 @@ graph TD
     B -- Yes --> C[Create new Refund record]
     C --> D[Update original Payment to 'Refunding']
     D --> E[Notify Partner via Webhook]
-    E -- F[Return 200 OK]
+    E --> F[Return 200 OK]
     B -- No --> G[Return 404/400 Error]
 ```
 
