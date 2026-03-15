@@ -71,6 +71,16 @@ erDiagram
       string PayoutDetails
       string BillingCountry
       string ZipCode
+      string PasswordHash
+      string PasswordSalt
+      string PasswordResetToken
+      datetime PasswordResetTokenExpires
+      string IdImage
+      string LicenseImage
+      string PassportImage
+      string SelfieImage
+      string ResidenceProofImage
+      string JobProofImage
       datetime CreatedAt
       datetime UpdatedAt
     }
@@ -121,6 +131,47 @@ erDiagram
       string FailureMessage
       datetime CreatedAt
       datetime UpdatedAt
+    }
+    REVIEW {
+      int Id PK
+      int RenterId FK
+      int CarId FK
+      int Rating "1-5"
+      string Comment
+      datetime CreatedAt
+      datetime UpdatedAt
+    }
+    NOTIFICATION {
+      int Id PK
+      int UserId FK
+      string Title
+      string Message
+      string Type "info, booking, payment"
+      bool IsRead
+    }
+    MESSAGE {
+      int Id PK
+      int SenderId FK
+      int ReceiverId FK
+      string Content
+      bool IsRead
+    }
+    OTP {
+      int Id PK
+      int UserId FK
+      string OtpHash
+    }
+    CARIMAGE {
+      int Id PK
+      int CarId FK
+      string ImagePath
+    }
+    CARUNAVAILABLEDATE {
+      int Id PK
+      int CarId FK
+      datetime StartDate
+      datetime EndDate
+      string Reason
     }
 ```
 *(Note: The schema has been updated to include FirstName, LastName, and IsSuperAdmin for enhanced security and identity management).*
