@@ -476,5 +476,7 @@ For payment gateway (Paymob) and Flask integrations, we use **HMAC (Hash-based M
 
 ---
 **Prepared by:** [Mahmoud Samir Mohamed Mohamed]
+
 **Supervised by:** [Dr.Shimaa Abo Elgob]
+
 **Academic Year:** 2025/2026
