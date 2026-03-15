@@ -475,6 +475,6 @@ Passwords are never stored as plain text. We utilize industry-standard hashing a
 For payment gateway (Paymob) and Flask integrations, we use **HMAC (Hash-based Message Authentication Code)** to ensure data has not been tampered with during transit.
 
 ---
-**Prepared by:** [Your Name Here]
-**Supervised by:** [Supervisor's Name Here]
+**Prepared by:** [Mahmoud Samir Mohamed Mohamed]
+**Supervised by:** [Dr.Shimaa Abo Elgob]
 **Academic Year:** 2025/2026
