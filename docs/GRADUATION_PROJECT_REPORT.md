@@ -9,6 +9,7 @@ Modern Microsoft technologies were chosen to build this system based on several 
 - **C#**: A powerful, strongly-typed language that supports object-oriented programming and modern patterns, reducing runtime errors.
 - **Entity Framework Core**: A professional ORM tool that allows database interaction through code objects, facilitating maintenance and a "Code-First" development approach.
 - **SQL Server**: A robust relational database ensuring data integrity and the capability to handle large volumes of transactions.
+- **Google OAuth 2.0 & SMTP**: Integrated for secure external authentication and automated email communication (e.g., OTP delivery).
 
 ---
 
@@ -122,6 +123,128 @@ erDiagram
       datetime UpdatedAt
     }
 ```
+*(Note: The schema has been updated to include FirstName, LastName, and IsSuperAdmin for enhanced security and identity management).*
+
+### Class Diagram (Detailed)
+The following diagram illustrates the relationship between the core system components and their attributes:
+```mermaid
+classDiagram
+    class AuditableEntity {
+      +DateTime CreatedAt
+      +DateTime? UpdatedAt
+    }
+    class User {
+      +int Id
+      +string FirstName
+      +string LastName
+      +string Email
+      +string Phone
+      +string Role
+      +bool IsSuperAdmin
+      +string ApprovalStatus
+      +string Nationality
+      +string PreferredLanguage
+      +string LicenseNumber
+      +string PayoutMethod
+      +string PayoutDetails
+      +string BillingCountry
+      +string ZipCode
+      +string PasswordHash
+      +string PasswordSalt
+      +string PasswordResetToken
+      +DateTime? PasswordResetTokenExpires
+      +string IdImage
+      +string LicenseImage
+      +string PassportImage
+      +string SelfieImage
+      +string ResidenceProofImage
+      +string JobProofImage
+      +List~Car~ OwnedCars
+      +List~Booking~ BookingsAsRenter
+      +List~Review~ Reviews
+      +List~Notification~ Notifications
+      +List~Favorite~ Favorites
+      +List~Message~ SentMessages
+      +List~Message~ ReceivedMessages
+      +List~Otp~ Otps
+      +List~Payment~ Payments
+    }
+    class Car {
+      +int Id
+      +int OwnerId
+      +string Brand
+      +string Model
+      +int Year
+      +decimal PricePerDay
+      +string Status
+      +string Transmission
+      +string Color
+      +string LocationCity
+      +decimal AverageRating
+      +string Features
+      +string Description
+      +string LicensePlate
+      +string CarLicenseImage
+      +User Owner
+      +List~Booking~ Bookings
+      +List~Review~ Reviews
+      +List~CarImage~ Images
+      +List~CarUnavailableDate~ UnavailableDates
+      +List~Favorite~ Favorites
+    }
+    class Booking {
+      +int Id
+      +int CarId
+      +int RenterId
+      +DateTime StartDate
+      +DateTime EndDate
+      +string Status
+      +string TransactionId
+      +decimal TotalPrice
+      +decimal PaidAmount
+      +DateTime? PaymentConfirmedAt
+      +Car Car
+      +User Renter
+      +List~Payment~ Payments
+    }
+    class Payment {
+      +int Id
+      +int BookingId
+      +int? UserId
+      +decimal Amount
+      +string Currency
+      +string Status
+      +string Provider
+      +string ProviderPaymentId
+      +string ProviderReceiptUrl
+      +string FailureCode
+      +string FailureMessage
+      +Booking Booking
+      +User User
+    }
+    
+    AuditableEntity <|-- User
+    AuditableEntity <|-- Car
+    AuditableEntity <|-- Booking
+    AuditableEntity <|-- Payment
+    AuditableEntity <|-- Review
+    
+    User "1" --> "many" Car : owns
+    User "1" --> "many" Booking : rents
+    User "1" --> "many" Payment : pays
+    User "1" --> "many" Notification : receives
+    User "1" --> "many" Favorite : marks
+    User "1" --> "many" Message : sends/receives
+    User "1" --> "many" Otp : has
+    
+    Car "1" --> "many" Booking : has
+    Car "1" --> "many" Review : gets
+    Car "1" --> "many" CarImage : has
+    Car "1" --> "many" CarUnavailableDate : blocks
+    Car "1" --> "many" Favorite : featuredIn
+    
+    Booking "1" --> "many" Payment : generates
+```
 
 ---
 
@@ -129,7 +252,8 @@ erDiagram
 
 This section details the critical operational flows within the Rently Management system.
 
-### 4.1. Authentication & Security Workflow
+### 4.1. Authentication & Security
+#### Login Workflow
 ```mermaid
 graph TD
     A[Client sends POST /api/auth/login] --> B{Verify Credentials}
@@ -138,7 +262,7 @@ graph TD
     C --> E[Return 200 OK + Token]
 ```
 
-### 4.2. Password Reset (OTP Flow)
+#### Password Reset (OTP Flow)
 ```mermaid
 graph TD
     A[POST /api/account/request-reset] --> B{User Exists?}
@@ -155,7 +279,7 @@ graph TD
     I -- Invalid/Expired --> M[Return 401 Unauthorized]
 ```
 
-### 4.3. Super Admin & Admin Creation Flow
+#### Add Admin (OTP Flow)
 ```mermaid
 graph TD
     A[SuperAdmin requests OTP for new admin] --> B{Is SuperAdmin?}
@@ -168,7 +292,40 @@ graph TD
     B -- No --> I[Return 403 Forbidden]
 ```
 
-### 4.4. Booking & Payment Integration (Paymob)
+### 4.2. User Onboarding & Verification
+```mermaid
+graph TD
+    A[User Registers] --> B[Upload ID/License/Selfie]
+    B --> C[Status: Pending]
+    C --> D[Admin Reviews Documents]
+    D --> E{Approve?}
+    E -- Yes --> F[Status: Approved]
+    E -- No --> G[Status: Rejected]
+```
+
+### 4.3. Car Management
+```mermaid
+graph TD
+    A[Owner creates Car Listing] --> B[Upload Car Images/License]
+    B --> C[Status: Pending]
+    C --> D[Admin Reviews Listing]
+    D --> E{Approve?}
+    E -- Yes --> F[Status: Available]
+    E -- No --> G[Status: Rejected]
+```
+
+### 4.4. Booking Process
+```mermaid
+graph TD
+    A[Renter selects Car & Dates] --> B[POST /api/booking]
+    B --> C[Status: Pending]
+    C --> D[Payment Initiation]
+    D --> E{Payment Success?}
+    E -- Yes --> F[Status: Confirmed]
+    E -- No --> G[Status: Cancelled/Pending]
+```
+
+### 4.5. Payment Integration (Paymob)
 ```mermaid
 graph TD
     A[POST /paymob/init] --> B[Auth with Paymob API]
@@ -182,7 +339,7 @@ graph TD
     I --> J[Notify Partner via Webhook]
 ```
 
-### 4.5. Refund Process Workflow
+### 4.6. Refund Process
 ```mermaid
 graph TD
     A[Admin initiates Refund] --> B{Payment exists & Succeeded?}
@@ -193,7 +350,7 @@ graph TD
     B -- No --> G[Return 404/400 Error]
 ```
 
-### 4.6. Partner Integration (Flask Webhooks)
+### 4.7. Partner Integration (Flask Webhooks)
 ```mermaid
 graph TD
     A[.NET Event Triggered] --> B[WebhookService.PublishAsync]
@@ -206,6 +363,25 @@ graph TD
     H -- Valid --> I[Flask App processes Data]
     H -- Invalid --> J[Flask App rejects Request]
     C -- No --> K[Exit]
+```
+
+### 4.8. Dashboard & Statistics
+```mermaid
+graph TD
+    A[GET /api/dashboard/stats] --> B[Calculate Total Revenue]
+    B --> C[Count Active Users/Cars/Bookings]
+    C --> D[Generate Charts Data]
+    D --> E[Return Comprehensive JSON]
+```
+
+### 4.9. Global Error Handling
+```mermaid
+graph TD
+    A[Any Exception Occurs] --> B[ExceptionMiddleware catches it]
+    B --> C[Log error details]
+    C --> D{Is Development?}
+    D -- Yes --> E[Return JSON with Stack Trace]
+    D -- No --> F[Return Friendly JSON Message]
 ```
 
 ---
@@ -230,11 +406,13 @@ Communication is handled via HTTP requests, with a **JWT (JSON Web Token)** pass
 
 ---
 
-## 5. Security & Authentication
+## 6. Security & Authentication
 A multi-layered security system has been implemented to protect user data and financial transactions:
 
-### 1. JWT Authentication
-The system uses **JSON Web Tokens**. Upon login, an encrypted token is generated containing user identification and claims (roles). This token has a specific expiration time and is verified programmatically for every request.
+### 1. JWT & Google OAuth 2.0 Authentication
+The system supports two main authentication methods:
+- **JWT Authentication**: Upon standard login, an encrypted token is generated containing user identification and claims (roles). This token has a specific expiration time and is verified programmatically for every request.
+- **Google OAuth 2.0**: For seamless onboarding, users can authenticate using their Google accounts. The backend verifies the Google ID Token and maps the user to the system's identity schema.
 
 ### 2. Super Admin Protection
 A dedicated `IsSuperAdmin` field exists in the database. This field is protected and cannot be modified via any public API. It is set manually or through secure system configurations. Only a Super Admin has the authority to add new administrative accounts.
