@@ -31,7 +31,8 @@ namespace Rently.Management.WebApi.Controllers
             var userDtos = result.Data.Select(u => new UserDto
             {
                 Id = u.Id,
-                Name = u.Name ?? "",
+                FirstName = u.FirstName ?? "",
+                LastName = u.LastName ?? "",
                 Email = includeContact ? (u.Email ?? "") : "",
                 Status = GetStatusFromApprovalStatus(u.ApprovalStatus)
             }).ToList();
@@ -59,7 +60,8 @@ namespace Rently.Management.WebApi.Controllers
             return Ok(new UserDto
             {
                 Id = user.Id,
-                Name = user.Name ?? "",
+                FirstName = user.FirstName ?? "",
+                LastName = user.LastName ?? "",
                 Email = includeContact ? (user.Email ?? "") : "",
                 Status = GetStatusFromApprovalStatus(user.ApprovalStatus)
             });
@@ -70,7 +72,8 @@ namespace Rently.Management.WebApi.Controllers
         {
             var user = new User
             {
-                Name = dto.Name,
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
                 Email = dto.Email,
                 Phone = dto.Phone,
                 Role = dto.Role,
@@ -82,7 +85,8 @@ namespace Rently.Management.WebApi.Controllers
             return CreatedAtAction(nameof(GetUser), new { id = createdUser.Id }, new UserDto
             {
                 Id = createdUser.Id,
-                Name = createdUser.Name ?? "",
+                FirstName = createdUser.FirstName ?? "",
+                LastName = createdUser.LastName ?? "",
                 Email = createdUser.Email ?? "",
                 Status = GetStatusFromApprovalStatus(createdUser.ApprovalStatus)
             });
@@ -98,8 +102,10 @@ namespace Rently.Management.WebApi.Controllers
                 return NotFound();
             }
 
-            if (!string.IsNullOrEmpty(dto.Name))
-                user.Name = dto.Name;
+            if (!string.IsNullOrEmpty(dto.FirstName))
+                user.FirstName = dto.FirstName;
+            if (!string.IsNullOrEmpty(dto.LastName))
+                user.LastName = dto.LastName;
             if (!string.IsNullOrEmpty(dto.Email) && dto.Email != user.Email)
                 return BadRequest();
             if (!string.IsNullOrEmpty(dto.Phone))
@@ -141,7 +147,8 @@ namespace Rently.Management.WebApi.Controllers
             return Ok(new UserDto
             {
                 Id = user.Id,
-                Name = user.Name ?? "",
+                FirstName = user.FirstName ?? "",
+                LastName = user.LastName ?? "",
                 Email = user.Email ?? "",
                 Status = GetStatusFromApprovalStatus(user.ApprovalStatus)
             });
@@ -157,7 +164,8 @@ namespace Rently.Management.WebApi.Controllers
             var userDtos = result.Data.Select(u => new UserDto
             {
                 Id = u.Id,
-                Name = u.Name ?? "",
+                FirstName = u.FirstName ?? "",
+                LastName = u.LastName ?? "",
                 Email = u.Email ?? "",
                 Status = GetStatusFromApprovalStatus(u.ApprovalStatus)
             }).ToList();

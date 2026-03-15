@@ -68,12 +68,12 @@ namespace Rently.Management.WebApi.Controllers
             }
 
             // Verify user exists
-            if (dto.UserId > 0)
+            if (dto.UserId.HasValue && dto.UserId.Value > 0)
             {
-                var userExists = await _userRepository.ExistsAsync(dto.UserId);
+                var userExists = await _userRepository.ExistsAsync(dto.UserId.Value);
                 if (!userExists)
                 {
-                    return BadRequest(new { message = $"User with ID {dto.UserId} does not exist." });
+                    return BadRequest(new { message = $"User with ID {dto.UserId.Value} does not exist." });
                 }
             }
 
@@ -83,7 +83,7 @@ namespace Rently.Management.WebApi.Controllers
                 ? _configuration["Paymob:IntegrationIdWallet"] ?? ""
                 : _configuration["Paymob:IntegrationIdCard"] ?? "";
             var useIframe = method != "wallet";
-            var (orderId, paymentToken, url) = await _paymobService.InitiateAsync(amountCents, dto.Currency, dto.Email, dto.Name, dto.Phone, integrationId, useIframe);
+            var (orderId, paymentToken, url) = await _paymobService.InitiateAsync(amountCents, dto.Currency, dto.Email, dto.FullName, dto.Phone, integrationId, useIframe);
             var payment = new Payment
             {
                 BookingId = dto.BookingId,
@@ -112,7 +112,8 @@ namespace Rently.Management.WebApi.Controllers
             [FromQuery] decimal amount,
             [FromQuery] string currency = "EGP",
             [FromQuery] string email = "",
-            [FromQuery] string name = "",
+            [FromQuery] string firstName = "",
+            [FromQuery] string lastName = "",
             [FromQuery] string phone = "",
             [FromQuery] string method = "card")
         {
@@ -139,7 +140,8 @@ namespace Rently.Management.WebApi.Controllers
                 ? _configuration["Paymob:IntegrationIdWallet"] ?? ""
                 : _configuration["Paymob:IntegrationIdCard"] ?? "";
             var useIframe = method != "wallet";
-            var (orderId, paymentToken, url) = await _paymobService.InitiateAsync(amountCents, currency, email, name, phone, integrationId, useIframe);
+            var fullName = $"{firstName} {lastName}".Trim();
+            var (orderId, paymentToken, url) = await _paymobService.InitiateAsync(amountCents, currency, email, fullName, phone, integrationId, useIframe);
             var payment = new Payment
             {
                 BookingId = bookingId,
@@ -299,8 +301,8 @@ namespace Rently.Management.WebApi.Controllers
                 TxId = p.ProviderPaymentId ?? p.Id.ToString(),
                 Date = p.CreatedAt,
                 Type = GetPaymentType(p),
-                PayerName = p.Booking?.Renter?.Name ?? p.User?.Name ?? "",
-                PayeeName = p.Booking?.Car?.Owner?.Name ?? "",
+                PayerName = (p.Booking?.Renter != null ? $"{p.Booking.Renter.FirstName} {p.Booking.Renter.LastName}".Trim() : (p.User != null ? $"{p.User.FirstName} {p.User.LastName}".Trim() : "")),
+                PayeeName = (p.Booking?.Car?.Owner != null ? $"{p.Booking.Car.Owner.FirstName} {p.Booking.Car.Owner.LastName}".Trim() : ""),
                 Amount = p.Amount,
                 Status = p.Status,
                 Currency = p.Currency,
@@ -329,7 +331,7 @@ namespace Rently.Management.WebApi.Controllers
                 .Select(g => new OwnerPayoutDto
                 {
                     Id = g.Key,
-                    OwnerName = g.First().Booking!.Car!.Owner?.Name ?? "",
+                    OwnerName = g.First().Booking!.Car!.Owner != null ? $"{g.First().Booking!.Car!.Owner!.FirstName} {g.First().Booking!.Car!.Owner!.LastName}".Trim() : "",
                     LastPayout = g.Max(p => p.CreatedAt),
                     Amount = g.Sum(p => p.Amount),
                     Status = "Completed",
@@ -358,7 +360,7 @@ namespace Rently.Management.WebApi.Controllers
             var refundDtos = result.Data.Select(p => new RefundDto
             {
                 Id = p.Id,
-                RenterName = p.Booking?.Renter?.Name ?? "",
+                RenterName = p.Booking?.Renter != null ? $"{p.Booking.Renter.FirstName} {p.Booking.Renter.LastName}".Trim() : "",
                 RefundAmount = p.Amount,
                 Status = GetRefundStatus(p.Status),
                 CreatedAt = p.CreatedAt,
@@ -392,8 +394,8 @@ namespace Rently.Management.WebApi.Controllers
                 TxId = payment.ProviderPaymentId ?? payment.Id.ToString(),
                 Date = payment.CreatedAt,
                 Type = GetPaymentType(payment),
-                PayerName = payment.Booking?.Renter?.Name ?? payment.User?.Name ?? "",
-                PayeeName = payment.Booking?.Car?.Owner?.Name ?? "",
+                PayerName = (payment.Booking?.Renter != null ? $"{payment.Booking.Renter.FirstName} {payment.Booking.Renter.LastName}".Trim() : (payment.User != null ? $"{payment.User.FirstName} {payment.User.LastName}".Trim() : "")),
+                PayeeName = (payment.Booking?.Car?.Owner != null ? $"{payment.Booking.Car.Owner.FirstName} {payment.Booking.Car.Owner.LastName}".Trim() : ""),
                 Amount = payment.Amount,
                 Status = payment.Status,
                 Currency = payment.Currency,
@@ -426,8 +428,8 @@ namespace Rently.Management.WebApi.Controllers
                 TxId = createdPayment.ProviderPaymentId ?? createdPayment.Id.ToString(),
                 Date = createdPayment.CreatedAt,
                 Type = GetPaymentType(paymentWithDetails!),
-                PayerName = paymentWithDetails?.Booking?.Renter?.Name ?? paymentWithDetails?.User?.Name ?? "",
-                PayeeName = paymentWithDetails?.Booking?.Car?.Owner?.Name ?? "",
+                PayerName = (paymentWithDetails?.Booking?.Renter != null ? $"{paymentWithDetails.Booking.Renter.FirstName} {paymentWithDetails.Booking.Renter.LastName}".Trim() : (paymentWithDetails?.User != null ? $"{paymentWithDetails.User.FirstName} {paymentWithDetails.User.LastName}".Trim() : "")),
+                PayeeName = (paymentWithDetails?.Booking?.Car?.Owner != null ? $"{paymentWithDetails.Booking.Car.Owner.FirstName} {paymentWithDetails.Booking.Car.Owner.LastName}".Trim() : ""),
                 Amount = createdPayment.Amount,
                 Status = createdPayment.Status,
                 Currency = createdPayment.Currency,

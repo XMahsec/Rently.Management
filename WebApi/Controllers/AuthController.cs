@@ -69,7 +69,7 @@ namespace Rently.Management.WebApi.Controllers
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
-                new Claim(ClaimTypes.Name, user.Name ?? ""),
+                new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}".Trim()),
                 new Claim(ClaimTypes.Role, user.Role ?? "User")
             };
 
@@ -87,7 +87,8 @@ namespace Rently.Management.WebApi.Controllers
             return Ok(new LoginResponseDto
             {
                 Token = tokenString,
-                Name = user.Name,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
                 Email = user.Email,
                 Role = user.Role,
                 UserId = user.Id

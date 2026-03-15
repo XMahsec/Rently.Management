@@ -13,7 +13,8 @@ namespace Rently.Management.Infrastructure.Data.Configurations
             builder.HasKey(u => u.Id);
             builder.Property(u => u.Id).ValueGeneratedOnAdd();
 
-            builder.Property(u => u.Name).HasMaxLength(150);
+            builder.Property(u => u.FirstName).HasMaxLength(150);
+            builder.Property(u => u.LastName).HasMaxLength(150);
             builder.Property(u => u.Email).HasMaxLength(255);
             builder.Property(u => u.Phone).HasMaxLength(30);
             builder.Property(u => u.Role).HasMaxLength(50);

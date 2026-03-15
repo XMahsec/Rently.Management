@@ -28,7 +28,7 @@ public class RequestRepository : IRequestRepository
             {
                 Id = u.Id,
                 Type = "Owner verification",
-                SubmittedBy = u.Name ?? "",
+                SubmittedBy = (u.FirstName + " " + u.LastName).Trim(),
                 SubmittedOn = u.CreatedAt,
                 TotalPrice = 0,
                 Status =
@@ -44,7 +44,7 @@ public class RequestRepository : IRequestRepository
             {
                 Id = c.Id,
                 Type = "Car listing",
-                SubmittedBy = (c.Owner != null ? (c.Owner.Name ?? "") : ""),
+                SubmittedBy = (c.Owner != null ? (c.Owner.FirstName + " " + c.Owner.LastName).Trim() : ""),
                 SubmittedOn = c.CreatedAt,
                 TotalPrice = c.PricePerDay,
                 Status =

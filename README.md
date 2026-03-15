@@ -76,7 +76,7 @@ The infrastructure is ready for Google SMTP. Ensure these settings are in your `
 - `POST /change-name` [JWT]
   - **Success**: `204 No Content`
   - **Errors**: `401 Unauthorized`, `404 Not Found`
-  - **Description**: Updates the current user's display name.
+  - **Description**: Updates the current user's first and last name.
 - `POST /change-password` [JWT]
   - **Success**: `204 No Content`
   - **Errors**: `401 Unauthorized`, `400 Bad Request`
@@ -96,7 +96,7 @@ The infrastructure is ready for Google SMTP. Ensure these settings are in your `
 - `POST /add-admin` [Admin]
   - **Success**: `201 Created`
   - **Errors**: `403 Forbidden`, `400 Bad Request` (Invalid OTP), `409 Conflict`
-  - **Description**: Finalizes admin creation using verified OTP.
+  - **Description**: Finalizes admin creation using verified OTP. (Requires FirstName and LastName)
 
 ### 🚗 Car Management (`/api/car`)
 - `GET /statistics` [JWT]

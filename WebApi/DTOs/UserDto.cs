@@ -4,7 +4,9 @@ namespace Rently.Management.WebApi.DTOs;
 public class UserDto
 {
     public int Id { get; set; }
-    public string Name { get; set; } = "";
+    public string FirstName { get; set; } = "";
+    public string LastName { get; set; } = "";
+    public string FullName => $"{FirstName} {LastName}".Trim();
     public string Email { get; set; } = "";
     public string Status { get; set; } = "";
 }
@@ -13,7 +15,10 @@ public class CreateUserDto
 {
     [Required]
     [StringLength(150)]
-    public string? Name { get; set; }
+    public string? FirstName { get; set; }
+    [Required]
+    [StringLength(150)]
+    public string? LastName { get; set; }
     [Required]
     [EmailAddress]
     [StringLength(255)]
@@ -30,7 +35,9 @@ public class CreateUserDto
 public class UpdateUserDto
 {
     [StringLength(150)]
-    public string? Name { get; set; }
+    public string? FirstName { get; set; }
+    [StringLength(150)]
+    public string? LastName { get; set; }
     [EmailAddress]
     [StringLength(255)]
     public string? Email { get; set; }

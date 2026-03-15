@@ -6,7 +6,10 @@ namespace Rently.Management.WebApi.DTOs
     {
         [Required]
         [StringLength(150)]
-        public string Name { get; set; } = "";
+        public string FirstName { get; set; } = "";
+        [Required]
+        [StringLength(150)]
+        public string LastName { get; set; } = "";
     }
 
     public class ChangePasswordDto
@@ -44,7 +47,10 @@ namespace Rently.Management.WebApi.DTOs
     {
         [Required]
         [StringLength(150)]
-        public string Name { get; set; } = "";
+        public string FirstName { get; set; } = "";
+        [Required]
+        [StringLength(150)]
+        public string LastName { get; set; } = "";
         [Required]
         [EmailAddress]
         [StringLength(255)]

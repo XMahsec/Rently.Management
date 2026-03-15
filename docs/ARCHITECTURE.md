@@ -23,7 +23,8 @@ erDiagram
 
     USER {
       int Id PK
-      string Name
+      string FirstName
+      string LastName
       string Email UNIQUE
       string Phone UNIQUE
       string Role "Owner, Renter, Admin"
@@ -148,7 +149,8 @@ classDiagram
     }
     class User {
       +int Id
-      +string Name
+      +string FirstName
+      +string LastName
       +string Email
       +string Phone
       +string Role

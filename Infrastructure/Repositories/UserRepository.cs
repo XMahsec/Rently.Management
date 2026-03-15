@@ -34,7 +34,8 @@ public class UserRepository : IUserRepository
         if (!string.IsNullOrEmpty(search))
         {
             query = query.Where(u => 
-                (u.Name != null && u.Name.Contains(search)) ||
+                (u.FirstName != null && u.FirstName.Contains(search)) ||
+                (u.LastName != null && u.LastName.Contains(search)) ||
                 (u.Email != null && u.Email.Contains(search)));
         }
 

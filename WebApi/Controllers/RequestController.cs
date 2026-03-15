@@ -70,7 +70,7 @@ namespace Rently.Management.WebApi.Controllers
                 {
                     Id = user.Id,
                     Type = "Owner verification",
-                    Name = user.Name ?? "",
+                    Name = $"{user.FirstName} {user.LastName}".Trim(),
                     Email = user.Email ?? "",
                     PhoneNumber = user.Phone ?? "",
                     SubmittedOn = user.CreatedAt,
@@ -94,7 +94,7 @@ namespace Rently.Management.WebApi.Controllers
                 {
                     Id = car.Id,
                     Type = "Car listing",
-                    Name = car.Owner?.Name ?? "",
+                    Name = car.Owner != null ? $"{car.Owner.FirstName} {car.Owner.LastName}".Trim() : "",
                     Email = car.Owner?.Email ?? "",
                     PhoneNumber = car.Owner?.Phone ?? "",
                     SubmittedOn = car.CreatedAt,

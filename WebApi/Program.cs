@@ -155,7 +155,8 @@ using (var scope = app.Services.CreateScope())
         {
             var adminUser = new User
             {
-                Name = "Admin",
+                FirstName = "Super",
+                LastName = "Admin",
                 Email = adminEmail,
                 Role = "Admin",
                 ApprovalStatus = "Approved",

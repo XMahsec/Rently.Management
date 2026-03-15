@@ -37,11 +37,12 @@ namespace Rently.Management.WebApi.Controllers
             if (!int.TryParse(sub, out var userId)) return Unauthorized();
             var user = await _context.Users.FindAsync(userId);
             if (user == null) return NotFound();
-            user.Name = dto.Name;
+            user.FirstName = dto.FirstName;
+            user.LastName = dto.LastName;
             user.UpdatedAt = DateTime.UtcNow;
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
-            _ = _webhookService.PublishAsync("user.updated", new { user_id = user.Id, name = user.Name, email = user.Email });
+            _ = _webhookService.PublishAsync("user.updated", new { user_id = user.Id, first_name = user.FirstName, last_name = user.LastName, email = user.Email });
             return NoContent();
         }
 
@@ -194,7 +195,8 @@ namespace Rently.Management.WebApi.Controllers
             var pair = _passwordService.HashPassword(dto.Password);
             var user = new Rently.Management.Domain.Entities.User
             {
-                Name = dto.Name,
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
                 Email = dto.Email,
                 Phone = dto.Phone,
                 Role = "Admin",
@@ -205,7 +207,7 @@ namespace Rently.Management.WebApi.Controllers
             };
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
-            _ = _webhookService.PublishAsync("user.created", new { user_id = user.Id, name = user.Name, email = user.Email, role = user.Role });
+            _ = _webhookService.PublishAsync("user.created", new { user_id = user.Id, first_name = user.FirstName, last_name = user.LastName, email = user.Email, role = user.Role });
             return CreatedAtAction(nameof(AddAdmin), new { id = user.Id }, new { id = user.Id });
         }
     }
